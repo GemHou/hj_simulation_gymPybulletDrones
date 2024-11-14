@@ -556,8 +556,13 @@ class BaseAviary(gym.Env):
             to understand its format.
 
         """
-        state = np.hstack([self.pos[nth_drone, :], self.quat[nth_drone, :], self.rpy[nth_drone, :],
-                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_clipped_action[nth_drone, :]])
+        pos = self.pos[nth_drone, :]
+        nth = self.quat[nth_drone, :]
+        rpy = self.rpy[nth_drone, :]
+        vel = self.vel[nth_drone, :]
+        ang = self.ang_v[nth_drone, :]
+        last_clipped_action = self.last_clipped_action[nth_drone, :]
+        state = np.hstack([pos, nth, rpy, vel, ang, last_clipped_action])
         return state.reshape(20,)
 
     ################################################################################

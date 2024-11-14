@@ -310,8 +310,8 @@ class BaseRLAviary(BaseAviary):
             obs_12 = np.zeros((self.NUM_DRONES,12))
             for i in range(self.NUM_DRONES):
                 #obs = self._clipAndNormalizeState(self._getDroneStateVector(i))
-                obs = self._getDroneStateVector(i)
-                obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
+                obs = self._getDroneStateVector(i)  # [pos 3, nth 4, rpy 3, vel 3, ang 3, last_clipped_action 4]
+                obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)  # [pos 3, rpy 3, vel 3, ang 3]
             ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):
