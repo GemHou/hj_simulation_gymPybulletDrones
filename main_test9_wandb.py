@@ -107,7 +107,7 @@ def compute_loss_pi_with_entropy(data, ac, clip_ratio,
 def compute_loss_v(data, ac):
     obs, ret = data['obs'], data['ret']
     loss = ((ac.v(obs) - ret) ** 2).mean()  # MSE loss
-    return loss.clamp(0, 1)
+    return loss.clamp(0, 5)
 
 
 def update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl):
@@ -161,7 +161,7 @@ def main():
     wandb.init(
         # mode="offline",
         project="project-drone-20241115",
-        resume="bs500-20241115"  # HjScenarioEnv
+        resume="vl5-bs500-20241115"  # HjScenarioEnv
     )
 
     env = HoverAviary(gui=False)
