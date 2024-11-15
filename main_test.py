@@ -20,7 +20,7 @@ def main():
 
     for i in range(10):
         obs_ma, info = env.reset()
-        for j in range(100):
+        for j in range(200):
             obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
             action, v, logp = ac.step(obs_tensor)
             action_ma = np.array([action])
