@@ -9,7 +9,7 @@ from gym_pybullet_drones.envs.HoverAviary import HoverAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "hjenv-reward-done005-el200-bs500-20241115"
+RESUME_NAME = "hjEnv2-reward-done005-el200-bs500-20241115"
 
 
 class HjAviary(HoverAviary):
