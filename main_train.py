@@ -13,7 +13,7 @@ DEVICE = torch.device("cpu")
 
 def main():
     local_steps_per_epoch = 500
-    max_ep_len = 50
+    max_ep_len = 200
     clip_ratio = 0.1
     train_pi_iters = 80
     train_v_iters = 80
@@ -26,7 +26,7 @@ def main():
     wandb.init(
         # mode="offline",
         project="project-drone-20241115",
-        resume="vl5-bs500-20241115"  # HjScenarioEnv
+        resume="reward-done005-el200-bs500-20241115"  # HjScenarioEnv
     )
 
     env = HoverAviary(gui=False)
@@ -41,6 +41,11 @@ def main():
     replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=local_steps_per_epoch)  # size=int(1e6)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
+
+    # state_dict = torch.load("./data/interim/para_temp.pt",
+    #                         map_location=torch.device(DEVICE))
+    # ac.load_state_dict(state_dict)
+
     pi_optimizer = Adam(ac.pi.parameters(), lr=pi_lr)
     vf_optimizer = Adam(ac.v.parameters(), lr=vf_lr)
 
@@ -58,6 +63,8 @@ def main():
         data = replay_buffer.get(device=DEVICE)
 
         update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
+
+        torch.save(ac.state_dict(), "./data/interim/para_temp.pt")
 
     print("Finished...")
 
