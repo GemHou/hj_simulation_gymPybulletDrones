@@ -284,16 +284,16 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
         action_ma = np.array([action])
         next_obs_ma, reward, done, truncated, info = env.step(action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
 
-        obs_12 = next_obs_ma[:, :12]  # [1, 12]  # [pos 3, rpy 3, vel 3, ang 3]
-        pos = obs_12[:, 0:3]
-        rpy = obs_12[:, 3:6]
-        vel = obs_12[:, 6:9]
-        ang = obs_12[:, 9:12]
-        reward = pos[0, 2]
-
-        if reward < 0.05:
-            done = True
-            reward = -10
+        # obs_12 = next_obs_ma[:, :12]  # [1, 12]  # [pos 3, rpy 3, vel 3, ang 3]
+        # pos = obs_12[:, 0:3]
+        # rpy = obs_12[:, 3:6]
+        # vel = obs_12[:, 6:9]
+        # ang = obs_12[:, 9:12]
+        # reward = pos[0, 2]
+        #
+        # if reward < 0.05:
+        #     done = True
+        #     reward = -10
 
         ep_len += 1
         ep_ret += reward

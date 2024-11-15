@@ -9,6 +9,30 @@ from gym_pybullet_drones.envs.HoverAviary import HoverAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
+RESUME_NAME = "hjenv-reward-done005-el200-bs500-20241115"
+
+
+class HjAviary(HoverAviary):
+    def _computeReward(self):
+        state = self._getDroneStateVector(0)  # pos 3 quat 4 ...
+        # ret = max(0, 2 - np.linalg.norm(self.TARGET_POS - state[0:3]) ** 4)
+        pos = state[:3]
+        pos_z = pos[2]
+        if pos_z < 0.05:
+            ret = -10
+        else:
+            ret = pos_z
+        return ret
+
+    def _computeTerminated(self):
+        state = self._getDroneStateVector(0)
+        pos = state[:3]
+        pos_z = pos[2]
+        if pos_z < 0.05:
+            done = True
+        else:
+            done = False
+        return done
 
 
 def main():
@@ -26,10 +50,10 @@ def main():
     wandb.init(
         # mode="offline",
         project="project-drone-20241115",
-        resume="reward-done005-el200-bs500-20241115"  # HjScenarioEnv
+        resume=RESUME_NAME  # HjScenarioEnv
     )
 
-    env = HoverAviary(gui=False)
+    env = HjAviary(gui=False)
 
     print("env.CTRL_FREQ: ", env.CTRL_FREQ)
     print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)
