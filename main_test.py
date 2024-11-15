@@ -26,6 +26,7 @@ def main():
             action_ma = np.array([action])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
+            obs_ma = next_obs_ma
 
             env.render()
             time.sleep(1/30)
