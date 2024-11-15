@@ -6,26 +6,9 @@ from gym_pybullet_drones.envs.HoverAviary import HoverAviary
 from utils_rl import PPOBuffer, MLPActorCritic
 
 
-def main():
-    env = HoverAviary(gui=True)
-
-    print("env.CTRL_FREQ: ", env.CTRL_FREQ)
-    print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)
-    print("env.action_space: ", env.action_space)
-
-    obs_dim = env.observation_space.shape[1]
-    act_dim = env.action_space.shape[1]
-
-    replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=int(500))  # size=int(1e6)
-
-    ac = MLPActorCritic(env.observation_space, env.action_space)
-
-    local_steps_per_epoch = 200
-    max_ep_len = 50
-
+def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer):
     obs_ma, info = env.reset()
     ep_ret, ep_len = 0, 0
-
     for t in range(local_steps_per_epoch):
         obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
         action, v, logp = ac.step(obs_tensor)
@@ -64,6 +47,26 @@ def main():
             replay_buffer.finish_path(v)
             obs_ma, info = env.reset()
             ep_ret, ep_len = 0, 0
+
+
+def main():
+    env = HoverAviary(gui=True)
+
+    print("env.CTRL_FREQ: ", env.CTRL_FREQ)
+    print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)
+    print("env.action_space: ", env.action_space)
+
+    obs_dim = env.observation_space.shape[1]
+    act_dim = env.action_space.shape[1]
+
+    replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=int(500))  # size=int(1e6)
+
+    ac = MLPActorCritic(env.observation_space, env.action_space)
+
+    local_steps_per_epoch = 200
+    max_ep_len = 50
+
+    collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer)
 
     print("Finished...")
 
