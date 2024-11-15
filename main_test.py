@@ -4,13 +4,13 @@ import torch
 import numpy as np
 
 from utils_rl import MLPActorCritic
-from gym_pybullet_drones.envs.HoverAviary import HoverAviary
+from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
 
 
 def main():
-    env = HoverAviary(gui=True)
+    env = HjAviary(gui=True)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
@@ -26,17 +26,10 @@ def main():
             action_ma = np.array([action])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
-            # obs_12 = next_obs_ma[:, :12]  # [1, 12]  # [pos 3, rpy 3, vel 3, ang 3]
-            # pos = obs_12[:, 0:3]
-            # rpy = obs_12[:, 3:6]
-            # vel = obs_12[:, 6:9]
-            # ang = obs_12[:, 9:12]
-            # reward = pos[0, 2]
-            # env.render()
-            # time.sleep(1/30)
-            # obs_ma = next_obs_ma
-            # if reward < 0.05:
-            #     done = True
+
+            env.render()
+            time.sleep(1/30)
+
             if done:
                 break
 

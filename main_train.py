@@ -5,34 +5,11 @@ import torch
 from torch.optim import Adam
 # import matplotlib.pyplot as plt
 
-from gym_pybullet_drones.envs.HoverAviary import HoverAviary
+from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
 RESUME_NAME = "hjEnv2-reward-done005-el200-bs500-20241115"
-
-
-class HjAviary(HoverAviary):
-    def _computeReward(self):
-        state = self._getDroneStateVector(0)  # pos 3 quat 4 ...
-        # ret = max(0, 2 - np.linalg.norm(self.TARGET_POS - state[0:3]) ** 4)
-        pos = state[:3]
-        pos_z = pos[2]
-        if pos_z < 0.05:
-            ret = -10
-        else:
-            ret = pos_z
-        return ret
-
-    def _computeTerminated(self):
-        state = self._getDroneStateVector(0)
-        pos = state[:3]
-        pos_z = pos[2]
-        if pos_z < 0.05:
-            done = True
-        else:
-            done = False
-        return done
 
 
 def main():
