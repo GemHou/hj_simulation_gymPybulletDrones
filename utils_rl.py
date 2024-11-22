@@ -332,6 +332,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
             # wandb.log({"8 throughout/AverageResetTime": reset_time})
             list_epoch_reset_time.append(reset_time)
             ep_ret, ep_len = 0, 0
+    print("np.mean(list_epoch_ep_ret): ", np.mean(list_epoch_ep_ret))
     wandb.log({"5 performance/episode return": np.mean(list_epoch_ep_ret)})
     wandb.log({"5 performance/episode length": np.mean(list_epoch_ep_len)})
     wandb.log({"5 performance/return per step": np.mean(list_epoch_rps)})

@@ -31,7 +31,16 @@ class HjAviary(HoverAviary):
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
+        target_x = 0.5
+        target_y = 0.5
+        target_z = 0.5
         if pos_z < 0.08:
+            done = True
+        elif abs(pos_x - target_x) > 10:
+            done = True
+        elif abs(pos_y - target_y) > 10:
+            done = True
+        elif abs(pos_z - target_z) > 10:
             done = True
         else:
             done = False

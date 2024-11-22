@@ -9,7 +9,7 @@ from utils_drone import HjAviaryActionAng
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionAug-4-20241122"
+RESUME_NAME = "actionAug-7-20241122"
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     life_long_time_start = time.time()
 
     wandb.init(
-        # mode="offline",
+        mode="offline",
         project="project-drone-20241115",
         resume=RESUME_NAME  # HjScenarioEnv
     )
