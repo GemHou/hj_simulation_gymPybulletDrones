@@ -1,5 +1,6 @@
 import time
 
+import matplotlib.pyplot as plt
 import torch
 import numpy as np
 
@@ -20,9 +21,10 @@ def main():
                             map_location=torch.device(DEVICE))
     ac.load_state_dict(state_dict)
 
-    for i in range(10):
+    for i in range(1):
         obs_ma, info = env.reset()
-        for j in range(200):
+        list_vel_z = []
+        for j in range(100):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)
@@ -34,13 +36,12 @@ def main():
                 ang = obs_12[:, 9:12]
                 pos_z = pos[0, 2]
                 vel_z = vel[0, 2]
+                list_vel_z.append(vel_z)
                 if PID_MODE == "vel":
                     goal_vel_z = 0.5
                     print("vel_z: ", vel_z)
-                    if vel_z < goal_vel_z:
-                        action_z = 1
-                    else:
-                        action_z = -1
+                    vel_z_bias = vel_z - goal_vel_z
+                    action_z = vel_z_bias * -20
                 elif PID_MODE == "pos":
                     action_z = 0
                 else:
@@ -58,6 +59,8 @@ def main():
 
             if done:
                 break
+        plt.plot(list_vel_z)
+        plt.show()
 
 
 if __name__ == "__main__":
