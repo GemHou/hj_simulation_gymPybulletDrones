@@ -1,4 +1,5 @@
 import time
+import wandb
 
 import matplotlib.pyplot as plt
 import torch
@@ -13,6 +14,9 @@ PID_MODE = "vel"  # vel pos
 
 
 def main():
+    wandb.init(
+        project="project-drone-test-20241122",
+    )
     env = HjAviary(gui=True)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
@@ -24,7 +28,8 @@ def main():
     for i in range(1):
         obs_ma, info = env.reset()
         list_vel_z = []
-        for j in range(100):
+        list_vel_x = []
+        for j in range(1000):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)
@@ -35,32 +40,48 @@ def main():
                 vel = obs_12[:, 6:9]
                 ang = obs_12[:, 9:12]
                 ang_my = ang[0, 0]
-                ang_2 = ang[0, 1]
-                ang_3 = ang[0, 2]
-                print("ang_my: ", ang_my)
-                print("ang_2: ", ang_2)
-                print("ang_3: ", ang_3)
+                ang_x = ang[0, 1]
+                ang_z = ang[0, 2]
                 vel_x = vel[0, 0]
                 vel_y = vel[0, 1]
                 vel_z = vel[0, 2]
-                print("vel_x: ", vel_x)
-                print("vel_y: ", vel_y)
-                print("vel_z: ", vel_z)
                 pos_z = pos[0, 2]
-                list_vel_z.append(vel_z)
+                wandb.log({"ang/ang_my": ang_my})
+                wandb.log({"ang/ang_x": ang_x})
+                wandb.log({"ang/ang_z": ang_z})
+                wandb.log({"vel/vel_x": vel_x})
+                wandb.log({"vel/vel_y": vel_y})
+                wandb.log({"vel/vel_z": vel_z})
                 if PID_MODE == "vel":
+                    # vel
                     goal_vel_z = 0.5
                     vel_z_bias = vel_z - goal_vel_z
                     action_vel_z = vel_z_bias * -20
+                    goal_vel_x = 0.5
+                    # if vel_x < goal_vel_x:
+                    #     goal_ang_x = 0.1
+                    # else:
+                    #     goal_ang_x = -0.1
+                    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
+                    # ang
+                    action_ang_x = (goal_ang_x - ang_x) * 0.2
+                    action_ang_my = 0  # 0.01
+                    action_ang_z = 0  # 0.01
                 elif PID_MODE == "pos":
                     action_vel_z = 0
+                    action_ang_my = 0  # 0.01
+                    action_ang_x = 0  # 0.01
+                    action_ang_z = 0  # 0.01
                 else:
                     raise
-                action_ang_my = 0
-                action = [action_vel_z - action_ang_my,
-                          action_vel_z - action_ang_my,
-                          action_vel_z + action_ang_my,
-                          action_vel_z + action_ang_my]
+                wandb.log({"action/action_vel_z": action_vel_z})
+                wandb.log({"action/action_ang_x": action_ang_x})
+                wandb.log({"action/action_ang_my": action_ang_my})
+                wandb.log({"action/action_ang_z": action_ang_z})
+                action = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
+                          action_vel_z - action_ang_my + action_ang_x + action_ang_z,
+                          action_vel_z + action_ang_my + action_ang_x - action_ang_z,
+                          action_vel_z + action_ang_my - action_ang_x + action_ang_z]
             else:
                 raise
             action_ma = np.array([action])
@@ -73,8 +94,6 @@ def main():
 
             if done:
                 break
-        plt.plot(list_vel_z)
-        plt.show()
 
 
 if __name__ == "__main__":
