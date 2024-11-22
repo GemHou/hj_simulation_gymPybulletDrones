@@ -9,7 +9,7 @@ from utils_rl import MLPActorCritic
 from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
-CONTROL_MODE = "PID"  # PID RL
+CONTROL_MODE = "RL"  # PID RL
 
 
 def analyse_obs(obs_ma):
