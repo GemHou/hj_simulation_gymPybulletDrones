@@ -42,17 +42,23 @@ def analyse_obs(obs_ma):
 def generate_action_pid(obs_ma):
     ang_my, ang_x, pos_z, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
     # goal_pos
-    goal_pos_z = 5
+    goal_pos_z = 3
+    wandb.log({"pos/goal_pos_z": goal_pos_z})
     # goal_vel
     goal_vel_z = (goal_pos_z - pos_z) * 0.5
     goal_vel_x = 1
     goal_vel_y = -0.5
+    wandb.log({"vel/goal_vel_z": goal_vel_z})
+    wandb.log({"vel/goal_vel_x": goal_vel_x})
+    wandb.log({"vel/goal_vel_y": goal_vel_y})
     # action_vel
     vel_z_bias = vel_z - goal_vel_z
     action_vel_z = vel_z_bias * -20
     # goal_ang
     goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
     goal_ang_my = (goal_vel_y - vel_y) * -0.02
+    wandb.log({"ang/goal_ang_x": goal_ang_x})
+    wandb.log({"ang/goal_ang_my": goal_ang_my})
     # action_ang
     action_ang_x = (goal_ang_x - ang_x) * 0.2
     action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
