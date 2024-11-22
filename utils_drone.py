@@ -18,9 +18,9 @@ class HjAviary(HoverAviary):
         target_x = 0.5
         target_y = 0.5
         target_z = 0.5
-        reward_target = 5 - ((pos_x - target_x)**2 + (pos_y-target_y)**2 + (pos_z-target_z)**2)*5
+        reward_target = 5 - ((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2) * 5
         # reward_target = min(reward_target, 10)
-        reward = reward_done + reward_target  #  + reward_z + reward_xy
+        reward = reward_done + reward_target  # + reward_z + reward_xy
         return reward
 
     def _computeTerminated(self):
@@ -35,3 +35,11 @@ class HjAviary(HoverAviary):
             done = False
 
         return done
+
+
+class HjAviaryActionAng(HjAviary):
+    def step(self,
+             action
+             ):
+        obs, reward, terminated, truncated, info = super().step(action)
+        return obs, reward, terminated, truncated, info
