@@ -7,6 +7,7 @@ from utils_rl import MLPActorCritic
 from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
+CONTROL_MODE = "rl"  # manual rl
 
 
 def main():
@@ -21,10 +22,11 @@ def main():
     for i in range(10):
         obs_ma, info = env.reset()
         for j in range(200):
-            if False:
+            if CONTROL_MODE == "rl":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)
-            else:
+            elif CONTROL_MODE == "manual":
+                goal_vel_z = 0.5
                 obs_12 = obs_ma[:, :12]
                 pos = obs_12[:, 0:3]
                 rpy = obs_12[:, 3:6]
@@ -34,13 +36,15 @@ def main():
                 vel_z = vel[0, 2]
                 if True:
                     print("vel_z: ", vel_z)
-                    if vel_z < 1:
+                    if vel_z < goal_vel_z:
                         action_z = 1
                     else:
                         action_z = -1
                 else:
                     action_z = 0
                 action = [action_z, action_z, action_z, action_z]
+            else:
+                raise
             action_ma = np.array([action])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
