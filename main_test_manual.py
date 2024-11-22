@@ -10,7 +10,6 @@ from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "PID"  # PID RL
-PID_MODE = "vel"  # vel pos
 
 
 def main():
@@ -42,37 +41,41 @@ def main():
                 ang_my = ang[0, 0]
                 ang_x = ang[0, 1]
                 ang_z = ang[0, 2]
-                vel_x = vel[0, 0]
-                vel_y = vel[0, 1]
-                vel_z = vel[0, 2]
-                pos_z = pos[0, 2]
                 wandb.log({"ang/ang_my": ang_my})
                 wandb.log({"ang/ang_x": ang_x})
                 wandb.log({"ang/ang_z": ang_z})
+                vel_x = vel[0, 0]
+                vel_y = vel[0, 1]
+                vel_z = vel[0, 2]
                 wandb.log({"vel/vel_x": vel_x})
                 wandb.log({"vel/vel_y": vel_y})
                 wandb.log({"vel/vel_z": vel_z})
-                if PID_MODE == "vel":
-                    # goal vel
-                    goal_vel_z = 0.5
-                    goal_vel_x = 1
-                    goal_vel_y = -0.5
-                    # vel
-                    vel_z_bias = vel_z - goal_vel_z
-                    action_vel_z = vel_z_bias * -20
-                    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
-                    goal_ang_my = (goal_vel_y - vel_y) * -0.02
-                    # ang
-                    action_ang_x = (goal_ang_x - ang_x) * 0.2
-                    action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
-                    action_ang_z = 0  # 0.01
-                elif PID_MODE == "pos":
-                    action_vel_z = 0
-                    action_ang_my = 0  # 0.01
-                    action_ang_x = 0  # 0.01
-                    action_ang_z = 0  # 0.01
-                else:
-                    raise
+                pos_x = pos[0, 0]
+                pos_y = pos[0, 1]
+                pos_z = pos[0, 2]
+                wandb.log({"pos/pos_x": pos_x})
+                wandb.log({"pos/pos_y": pos_y})
+                wandb.log({"pos/pos_z": pos_z})
+                # goal_pos
+                goal_pos_z = 5
+                # goal vel
+                # if pos_z < goal_pos_z:
+                #     goal_vel_z = 0.5
+                # else:
+                #     goal_vel_z = -0.5
+                goal_vel_z = (goal_pos_z - pos_z) * 0.5
+                goal_vel_x = 1
+                goal_vel_y = -0.5
+                # vel
+                vel_z_bias = vel_z - goal_vel_z
+                action_vel_z = vel_z_bias * -20
+                goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
+                goal_ang_my = (goal_vel_y - vel_y) * -0.02
+                # ang
+                action_ang_x = (goal_ang_x - ang_x) * 0.2
+                action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
+                action_ang_z = 0  # 0.01
+
                 wandb.log({"action/action_vel_z": action_vel_z})
                 wandb.log({"action/action_ang_x": action_ang_x})
                 wandb.log({"action/action_ang_my": action_ang_my})
