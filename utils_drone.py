@@ -20,7 +20,7 @@ class HjAviary(HoverAviary):
         target_x = 0.5
         target_y = 0.5
         target_z = 0.5
-        reward_target = 5 - ((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2) * 5
+        reward_target = 5 - (abs(pos_x - target_x) + abs(pos_y - target_y) + abs(pos_z - target_z))
         # reward_target = min(reward_target, 10)
         reward = reward_done + reward_target  # + reward_z + reward_xy
         return reward
@@ -36,11 +36,11 @@ class HjAviary(HoverAviary):
         target_z = 0.5
         if pos_z < 0.08:
             done = True
-        elif abs(pos_x - target_x) > 10:
+        elif abs(pos_x - target_x) > 5:
             done = True
-        elif abs(pos_y - target_y) > 10:
+        elif abs(pos_y - target_y) > 5:
             done = True
-        elif abs(pos_z - target_z) > 10:
+        elif abs(pos_z - target_z) > 5:
             done = True
         else:
             done = False
@@ -56,6 +56,8 @@ class HjAviaryActionAng(HjAviary):
         goal_ang_x = action_ma_aug[0, 0] * 0.02
         goal_ang_my = action_ma_aug[0, 1] * 0.02
         goal_vel_z = action_ma_aug[0, 2]
+        # if goal_vel_z < 0:
+        #     goal_vel_z = 0
         # get obs
         state = self._getDroneStateVector(0)  # [pos 3, nth 4, rpy 3, vel 3, ang 3, last_clipped_action 4]
         ang = state[13:16]
@@ -67,6 +69,8 @@ class HjAviaryActionAng(HjAviary):
         # action_vel
         vel_z_bias = vel_z - goal_vel_z
         action_vel_z = vel_z_bias * -20
+        # if action_vel_z > 1:
+        #
         # action_ang
         action_ang_x = (goal_ang_x - ang_x) * 0.2
         action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01

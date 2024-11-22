@@ -9,7 +9,7 @@ from utils_rl import MLPActorCritic
 from utils_drone import HjAviaryActionAng
 
 DEVICE = torch.device("cpu")
-CONTROL_MODE = "PID"  # PID RL
+CONTROL_MODE = "RL"  # PID RL
 
 
 def analyse_obs(obs_ma):
@@ -66,13 +66,14 @@ def generate_action_pid(obs_ma):
 
 def main():
     wandb.init(
+        # mode="offline",
         project="project-drone-test-20241122",
     )
     env = HjAviaryActionAng(gui=True)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
-    state_dict = torch.load("./data/interim/para_temp.pt",
+    state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
                             map_location=torch.device(DEVICE))
     ac.load_state_dict(state_dict)
 
@@ -80,6 +81,7 @@ def main():
         obs_ma, info = env.reset()
         for j in range(1000):
             if CONTROL_MODE == "RL":
+                ang_my, ang_x, pos_z, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action_motor, _, _ = ac.step(obs_tensor)
             elif CONTROL_MODE == "PID":
