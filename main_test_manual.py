@@ -34,19 +34,33 @@ def main():
                 rpy = obs_12[:, 3:6]
                 vel = obs_12[:, 6:9]
                 ang = obs_12[:, 9:12]
-                pos_z = pos[0, 2]
+                ang_my = ang[0, 0]
+                ang_2 = ang[0, 1]
+                ang_3 = ang[0, 2]
+                print("ang_my: ", ang_my)
+                print("ang_2: ", ang_2)
+                print("ang_3: ", ang_3)
+                vel_x = vel[0, 0]
+                vel_y = vel[0, 1]
                 vel_z = vel[0, 2]
+                print("vel_x: ", vel_x)
+                print("vel_y: ", vel_y)
+                print("vel_z: ", vel_z)
+                pos_z = pos[0, 2]
                 list_vel_z.append(vel_z)
                 if PID_MODE == "vel":
                     goal_vel_z = 0.5
-                    print("vel_z: ", vel_z)
                     vel_z_bias = vel_z - goal_vel_z
-                    action_z = vel_z_bias * -20
+                    action_vel_z = vel_z_bias * -20
                 elif PID_MODE == "pos":
-                    action_z = 0
+                    action_vel_z = 0
                 else:
                     raise
-                action = [action_z, action_z, action_z, action_z]
+                action_ang_my = 0
+                action = [action_vel_z - action_ang_my,
+                          action_vel_z - action_ang_my,
+                          action_vel_z + action_ang_my,
+                          action_vel_z + action_ang_my]
             else:
                 raise
             action_ma = np.array([action])
