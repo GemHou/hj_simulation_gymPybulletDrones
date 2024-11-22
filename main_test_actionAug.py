@@ -6,7 +6,7 @@ import torch
 import numpy as np
 
 from utils_rl import MLPActorCritic
-from utils_drone import HjAviary
+from utils_drone import HjAviaryActionAng
 
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "PID"  # PID RL
@@ -51,35 +51,21 @@ def generate_action_pid(obs_ma):
     wandb.log({"vel/goal_vel_z": goal_vel_z})
     wandb.log({"vel/goal_vel_x": goal_vel_x})
     wandb.log({"vel/goal_vel_y": goal_vel_y})
-    # action_vel
-    vel_z_bias = vel_z - goal_vel_z
-    action_vel_z = vel_z_bias * -20
     # goal_ang
     goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
     goal_ang_my = (goal_vel_y - vel_y) * -0.02
     wandb.log({"ang/goal_ang_x": goal_ang_x})
     wandb.log({"ang/goal_ang_my": goal_ang_my})
-    # action_ang
-    action_ang_x = (goal_ang_x - ang_x) * 0.2
-    action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
-    action_ang_z = 0  # 0.01
-    # final
-    wandb.log({"action/action_vel_z": action_vel_z})
-    wandb.log({"action/action_ang_x": action_ang_x})
-    wandb.log({"action/action_ang_my": action_ang_my})
-    wandb.log({"action/action_ang_z": action_ang_z})
-    action = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
-              action_vel_z - action_ang_my + action_ang_x + action_ang_z,
-              action_vel_z + action_ang_my + action_ang_x - action_ang_z,
-              action_vel_z + action_ang_my - action_ang_x + action_ang_z]
-    return action
+    action_motor = [goal_ang_x, goal_ang_my, goal_vel_z]
+
+    return action_motor
 
 
 def main():
     wandb.init(
         project="project-drone-test-20241122",
     )
-    env = HjAviary(gui=True)
+    env = HjAviaryActionAng(gui=True)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
@@ -92,12 +78,12 @@ def main():
         for j in range(1000):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
-                action, _, _ = ac.step(obs_tensor)
+                action_motor, _, _ = ac.step(obs_tensor)
             elif CONTROL_MODE == "PID":
-                action = generate_action_pid(obs_ma)
+                action_motor = generate_action_pid(obs_ma)
             else:
                 raise
-            action_ma = np.array([action])
+            action_ma = np.array([action_motor])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
             obs_ma = next_obs_ma
