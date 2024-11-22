@@ -53,19 +53,18 @@ def main():
                 wandb.log({"vel/vel_y": vel_y})
                 wandb.log({"vel/vel_z": vel_z})
                 if PID_MODE == "vel":
-                    # vel
+                    # goal vel
                     goal_vel_z = 0.5
+                    goal_vel_x = 1
+                    goal_vel_y = -0.5
+                    # vel
                     vel_z_bias = vel_z - goal_vel_z
                     action_vel_z = vel_z_bias * -20
-                    goal_vel_x = 0.5
-                    # if vel_x < goal_vel_x:
-                    #     goal_ang_x = 0.1
-                    # else:
-                    #     goal_ang_x = -0.1
                     goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
+                    goal_ang_my = (goal_vel_y - vel_y) * -0.02
                     # ang
                     action_ang_x = (goal_ang_x - ang_x) * 0.2
-                    action_ang_my = 0  # 0.01
+                    action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
                     action_ang_z = 0  # 0.01
                 elif PID_MODE == "pos":
                     action_vel_z = 0
