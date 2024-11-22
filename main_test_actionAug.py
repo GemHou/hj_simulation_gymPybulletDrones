@@ -52,8 +52,11 @@ def generate_action_pid(obs_ma):
     wandb.log({"vel/goal_vel_x": goal_vel_x})
     wandb.log({"vel/goal_vel_y": goal_vel_y})
     # goal_ang
-    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
-    goal_ang_my = (goal_vel_y - vel_y) * -0.02
+    goal_ang_x = (goal_vel_x - vel_x) * 0.02 / 0.02  # 0.02~0.05
+    goal_ang_my = (goal_vel_y - vel_y) * -0.02 / 0.02
+    goal_ang_x = 1
+    goal_ang_my = 1
+    goal_vel_z = 1
     wandb.log({"ang/goal_ang_x": goal_ang_x})
     wandb.log({"ang/goal_ang_my": goal_ang_my})
     action_motor = [goal_ang_x, goal_ang_my, goal_vel_z]

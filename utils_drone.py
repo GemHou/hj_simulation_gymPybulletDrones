@@ -44,8 +44,8 @@ class HjAviaryActionAng(HjAviary):
              action_ma_aug
              ):
         # analyse action
-        goal_ang_x = action_ma_aug[0, 0]
-        goal_ang_my = action_ma_aug[0, 1]
+        goal_ang_x = action_ma_aug[0, 0] * 0.02
+        goal_ang_my = action_ma_aug[0, 1] * 0.02
         goal_vel_z = action_ma_aug[0, 2]
         # get obs
         state = self._getDroneStateVector(0)  # [pos 3, nth 4, rpy 3, vel 3, ang 3, last_clipped_action 4]

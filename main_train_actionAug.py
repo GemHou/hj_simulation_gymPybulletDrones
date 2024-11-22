@@ -5,11 +5,11 @@ import torch
 from torch.optim import Adam
 # import matplotlib.pyplot as plt
 
-from utils_drone import HjAviary
+from utils_drone import HjAviaryActionAng
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionMotor-20241122"
+RESUME_NAME = "actionAug-4-20241122"
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
         resume=RESUME_NAME  # HjScenarioEnv
     )
 
-    env = HjAviary(gui=False)
+    env = HjAviaryActionAng(gui=False)
 
     print("env.CTRL_FREQ: ", env.CTRL_FREQ)
     print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)
@@ -65,7 +65,7 @@ def main():
 
         update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
 
-        torch.save(ac.state_dict(), "./data/interim/para_actionMotor_temp.pt")
+        torch.save(ac.state_dict(), "./data/interim/para_actionAug_temp.pt")
 
     print("Finished...")
 

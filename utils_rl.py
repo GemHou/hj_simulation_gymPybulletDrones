@@ -368,7 +368,7 @@ def compute_loss_pi_with_entropy(data, ac, clip_ratio,
 def compute_loss_v(data, ac):
     obs, ret = data['obs'], data['ret']
     loss = ((ac.v(obs) - ret) ** 2).mean()  # MSE loss
-    loss = loss.clamp(0, 500000)
+    # loss = loss.clamp(0, 500000)
     return loss  # .clamp(0, 20)
 
 
