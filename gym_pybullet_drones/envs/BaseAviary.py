@@ -22,6 +22,13 @@ class BaseAviary(gym.Env):
 
     ################################################################################
 
+    def hj_random_init(self):
+        x = np.random.uniform(-5, 10)
+        y = np.random.uniform(-5, 5)
+        z = np.random.uniform(1, 5)
+        initial_xyzs = np.vstack([[x, y, z]])
+        return initial_xyzs
+
     def __init__(self,
                  drone_model: DroneModel = DroneModel.CF2X,
                  num_drones: int = 1,
@@ -209,6 +216,7 @@ class BaseAviary(gym.Env):
         elif np.array(initial_xyzs).shape == (self.NUM_DRONES, 3):
             self.INIT_XYZS = initial_xyzs
         else:
+            print("np.array(initial_xyzs).shape: ", np.array(initial_xyzs).shape)
             print("[ERROR] invalid initial_xyzs in BaseAviary.__init__(), try initial_xyzs.reshape(NUM_DRONES,3)")
         if initial_rpys is None:
             self.INIT_RPYS = np.zeros((self.NUM_DRONES, 3))
@@ -515,6 +523,10 @@ class BaseAviary(gym.Env):
         pbl.setAdditionalSearchPath(pybullet_data.getDataPath(), physicsClientId=self.CLIENT)
         #### Load ground plane, drone and obstacles models #########
         self.PLANE_ID = pbl.loadURDF("plane.urdf", physicsClientId=self.CLIENT)
+
+        initial_xyzs = self.hj_random_init()
+        # print("initial_xyzs: ", initial_xyzs)
+        self.INIT_XYZS = initial_xyzs
 
         self.DRONE_IDS = np.array(
             [pbl.loadURDF(pkg_resources.resource_filename('gym_pybullet_drones', 'assets/' + self.URDF),

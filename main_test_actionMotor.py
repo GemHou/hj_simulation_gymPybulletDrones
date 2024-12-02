@@ -87,7 +87,7 @@ def main():
                             map_location=torch.device(DEVICE))
     ac.load_state_dict(state_dict)
 
-    for i in range(1):
+    for i in range(10):
         obs_ma, info = env.reset()
         for j in range(1000):
             if CONTROL_MODE == "RL":
@@ -103,7 +103,7 @@ def main():
             obs_ma = next_obs_ma
 
             env.render()
-            time.sleep(1 / 30)
+            time.sleep(1 / 30)  #  * 10
 
             if done:
                 break
