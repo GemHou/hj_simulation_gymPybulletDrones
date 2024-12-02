@@ -12,6 +12,8 @@ DEVICE = torch.device("cpu")
 RESUME_NAME = "actionAng-x10-reward1-20241202"
 
 
+# TODO： combine with main_train_actionMotor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 def main():
     local_steps_per_epoch = 2000
     max_ep_len = 1000

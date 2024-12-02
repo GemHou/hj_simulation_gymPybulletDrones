@@ -12,6 +12,7 @@ DEVICE = torch.device("cpu")
 RESUME_NAME = "actionMotor-x10-reward1-lrcos-len1000-20241202"
 EPOCH = 1000
 
+
 def main():
     local_steps_per_epoch = 2000
     max_ep_len = 1000
@@ -76,6 +77,7 @@ def main():
         torch.save(ac.state_dict(), "./data/interim/para_actionMotor_temp.pt")
 
     print("Finished...")
+
 
 if __name__ == "__main__":
     main()
