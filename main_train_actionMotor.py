@@ -9,7 +9,7 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionMotor-20241202-1404"
+RESUME_NAME = "actionMotor-x10-20241202"
 
 
 def main():

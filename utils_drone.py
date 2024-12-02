@@ -2,6 +2,10 @@ import numpy as np
 
 from gym_pybullet_drones.envs import HoverAviary
 
+TARGET_X = 10.5
+TARGET_Y = 0.5
+TARGET_Z = 0.5
+
 
 class HjAviary(HoverAviary):
     def _computeReward(self):
@@ -17,9 +21,9 @@ class HjAviary(HoverAviary):
             reward_done = 0
         # reward_z = pos_z
         # reward_xy = - abs(pos_x) - abs(pos_y)
-        target_x = 0.5
-        target_y = 0.5
-        target_z = 0.5
+        target_x = TARGET_X
+        target_y = TARGET_Y
+        target_z = TARGET_Z
         reward_target = 5 - (abs(pos_x - target_x) + abs(pos_y - target_y) + abs(pos_z - target_z))
         # reward_target = min(reward_target, 10)
         reward = reward_done + reward_target  # + reward_z + reward_xy
@@ -31,12 +35,12 @@ class HjAviary(HoverAviary):
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
-        target_x = 0.5
-        target_y = 0.5
-        target_z = 0.5
+        target_x = TARGET_X
+        target_y = TARGET_Y
+        target_z = TARGET_Z
         if pos_z < 0.08:
             done = True
-        elif abs(pos_x - target_x) > 5:
+        elif abs(pos_x - target_x) > 20:
             done = True
         elif abs(pos_y - target_y) > 5:
             done = True
