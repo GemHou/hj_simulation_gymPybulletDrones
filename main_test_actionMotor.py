@@ -89,7 +89,7 @@ def main():
 
     for i in range(1):
         obs_ma, info = env.reset()
-        for j in range(1000):
+        for j in range(200):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)

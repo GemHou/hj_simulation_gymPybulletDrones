@@ -9,12 +9,12 @@ from utils_drone import HjAviaryActionAng
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionAng-x10-20241202"
+RESUME_NAME = "actionAng-x10-reward1-20241202"
 
 
 def main():
     local_steps_per_epoch = 2000
-    max_ep_len = 200
+    max_ep_len = 1000
     clip_ratio = 0.1
     train_pi_iters = 80
     train_v_iters = 80
@@ -43,8 +43,8 @@ def main():
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
-    # state_dict = torch.load("./data/interim/para_temp.pt",
-    #                         map_location=torch.device(DEVICE))
+    state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
+                            map_location=torch.device(DEVICE))
     # ac.load_state_dict(state_dict)
 
     pi_optimizer = Adam(ac.pi.parameters(), lr=pi_lr)
