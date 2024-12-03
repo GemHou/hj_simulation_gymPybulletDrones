@@ -20,6 +20,9 @@ conda activate drones
 pip3 install --upgrade pip
 pip3 install -e . # if needed, `sudo apt install build-essential` to install `gcc` and build `pybullet`
 
+pip install tqdm
+pip install wandb
+pip install gym
 ```
 
 ## Use

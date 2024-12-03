@@ -9,8 +9,8 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionMotor-lrcos-cylinder-initRandom2-20241203"
-EPOCH = 5000  # 1000 5000
+RESUME_NAME = "5900X-actionMotor-lrcos-cylinder-initRandom2-20241203-1446"
+EPOCH = 2000  # 1000 5000
 
 
 def main():
