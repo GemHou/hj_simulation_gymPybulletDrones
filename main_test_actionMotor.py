@@ -79,7 +79,7 @@ def main():
     wandb.init(
         project="project-drone-test-20241122",
     )
-    env = HjAviary(gui=True)
+    env = HjAviary(gui=True, ctrl_freq=10, pyb_freq=100)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
@@ -89,7 +89,7 @@ def main():
 
     for i in range(10):
         obs_ma, info = env.reset()
-        for j in range(1000):
+        for j in range(200):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)
