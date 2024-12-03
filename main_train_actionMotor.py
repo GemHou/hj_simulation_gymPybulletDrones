@@ -9,17 +9,17 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-lrcos-cylinder-initRandom2-20241203-1446"
+RESUME_NAME = "5900X-actionMotor-initRandom2-paraStable-20241203"
 EPOCH = 2000  # 1000 5000
 
 
 def main():
-    local_steps_per_epoch = 2000
+    local_steps_per_epoch = 3000  # 2000 3000
     max_ep_len = 1000
-    clip_ratio = 0.1
+    clip_ratio = 0.07  # 0.1 0.07
     train_pi_iters = 80
     train_v_iters = 80
-    pi_lr = 3e-4  # 初始学习率
+    pi_lr = 2e-4  # 初始学习率  # 3e-4 2e-4
     vf_lr = 1e-3  # 固定学习率
     target_kl = 0.01
 
