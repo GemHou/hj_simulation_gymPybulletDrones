@@ -59,7 +59,10 @@ def main():
 
     for epoch in tqdm.tqdm(range(EPOCH)):
         wandb.log({"7_1 spup increase/Epoch": (epoch + 1)})
+        time_start_collect_experience_once = time.time()
         collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret)
+        time_collect_experience_once = time.time() - time_start_collect_experience_once
+        wandb.log({"8 throughout/EnvRateWithReset": local_steps_per_epoch / time_collect_experience_once})
         wandb.log({"7_1 spup increase/TotalEnvInteracts": (epoch + 1) * local_steps_per_epoch})
         life_long_time = time.time() - life_long_time_start
         wandb.log({"7_1 spup increase/Time": life_long_time})
