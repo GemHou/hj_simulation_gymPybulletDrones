@@ -307,6 +307,7 @@ class BaseAviary(gym.Env):
             in each subclass for its format.
 
         """
+        # action = np.clip(action, a_min=-10, a_max=10)
         #### Save PNG video frames if RECORD=True and GUI=False ####
         if self.RECORD and not self.GUI and self.step_counter % self.CAPTURE_FREQ == 0:
             [w, h, rgb, dep, seg] = pbl.getCameraImage(width=self.VID_WIDTH,

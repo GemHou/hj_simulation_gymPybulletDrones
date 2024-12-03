@@ -1,5 +1,7 @@
 import time
 import tqdm
+from scipy.signal import freqs
+
 import wandb
 import torch
 from torch.optim import Adam
@@ -9,8 +11,8 @@ from utils_drone import HjAviaryActionAng
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionAng-initRandom2-paraStable-20241203"
-EPOCH = 2000  # 1000 5000
+RESUME_NAME = "5900X-actionAng-control10-initRandom2-paraStable-20241203-1654"
+EPOCH = 200  # 1000 5000
 
 
 def main():
@@ -31,7 +33,7 @@ def main():
         resume=RESUME_NAME  # HjScenarioEnv
     )
 
-    env = HjAviaryActionAng(gui=False)
+    env = HjAviaryActionAng(gui=False, ctrl_freq=10, pyb_freq=100)
 
     print("env.CTRL_FREQ: ", env.CTRL_FREQ)
     print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)

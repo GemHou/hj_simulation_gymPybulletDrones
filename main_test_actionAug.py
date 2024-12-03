@@ -69,7 +69,7 @@ def main():
         # mode="offline",
         project="project-drone-test-20241122",
     )
-    env = HjAviaryActionAng(gui=True)
+    env = HjAviaryActionAng(gui=True, ctrl_freq=10)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
@@ -88,14 +88,17 @@ def main():
                 action_motor = generate_action_pid(obs_ma)
             else:
                 raise
-            action_motor = [0, 0, 10, 0]
+            if j % 50 < 25:
+                action_motor = [0, 0, 10, 0]
+            else:
+                action_motor = [0, 0, -10, 0]
             action_ma = np.array([action_motor])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
             obs_ma = next_obs_ma
 
             env.render()
-            time.sleep(1 / 30 * 5)
+            time.sleep(1 / 30)
 
             if done:
                 break

@@ -93,5 +93,6 @@ class HjAviaryActionAng(HjAviary):
                         action_vel_z + action_ang_my + action_ang_x - action_ang_z,
                         action_vel_z + action_ang_my - action_ang_x + action_ang_z]
         action_ma_motor = np.array([action_motor])
+        # action_ma_motor = np.clip(action_ma_motor, a_min=-10, a_max=10)
         obs, reward, terminated, truncated, info = super().step(action_ma_motor)
         return obs, reward, terminated, truncated, info
