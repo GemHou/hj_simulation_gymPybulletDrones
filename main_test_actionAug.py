@@ -77,7 +77,7 @@ def main():
                             map_location=torch.device(DEVICE))
     ac.load_state_dict(state_dict)
 
-    for i in range(1):
+    for i in range(20):
         obs_ma, info = env.reset()
         for j in range(1000):
             if CONTROL_MODE == "RL":
@@ -88,13 +88,14 @@ def main():
                 action_motor = generate_action_pid(obs_ma)
             else:
                 raise
+            action_motor = [0, 0, 10, 0]
             action_ma = np.array([action_motor])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
             obs_ma = next_obs_ma
 
             env.render()
-            time.sleep(1 / 30)
+            time.sleep(1 / 30 * 5)
 
             if done:
                 break

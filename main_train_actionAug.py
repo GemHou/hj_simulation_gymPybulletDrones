@@ -3,25 +3,24 @@ import tqdm
 import wandb
 import torch
 from torch.optim import Adam
-# import matplotlib.pyplot as plt
+from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from utils_drone import HjAviaryActionAng
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "actionAng-x10-reward1-20241202"
+RESUME_NAME = "5900X-actionAng-initRandom2-paraStable-20241203"
+EPOCH = 2000  # 1000 5000
 
-
-# TODO： combine with main_train_actionMotor !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 def main():
-    local_steps_per_epoch = 2000
+    local_steps_per_epoch = 3000  # 2000 3000
     max_ep_len = 1000
-    clip_ratio = 0.1
+    clip_ratio = 0.07  # 0.1 0.07
     train_pi_iters = 80
     train_v_iters = 80
-    pi_lr = 3e-4
-    vf_lr = 1e-3
+    pi_lr = 2e-4  # 初始学习率  # 3e-4 2e-4
+    vf_lr = 1e-3  # 固定学习率
     target_kl = 0.01
 
     life_long_time_start = time.time()
@@ -45,18 +44,25 @@ def main():
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
-    state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
-                            map_location=torch.device(DEVICE))
+    # state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
+    #                         map_location=torch.device(DEVICE))
     # ac.load_state_dict(state_dict)
 
     pi_optimizer = Adam(ac.pi.parameters(), lr=pi_lr)
     vf_optimizer = Adam(ac.v.parameters(), lr=vf_lr)
 
+    # 添加 Cosine Annealing 调度器
+    scheduler_pi = CosineAnnealingLR(optimizer=pi_optimizer, T_max=EPOCH, eta_min=1e-5)  # T_max 设为总 epoch 数
+    scheduler_vf = CosineAnnealingLR(optimizer=vf_optimizer, T_max=EPOCH, eta_min=1e-5)  # T_max 设为总 epoch 数
+
     list_ep_ret = []
 
-    for epoch in tqdm.tqdm(range(1000)):
+    for epoch in tqdm.tqdm(range(EPOCH)):
         wandb.log({"7_1 spup increase/Epoch": (epoch + 1)})
+        time_start_collect_experience_once = time.time()
         collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret)
+        time_collect_experience_once = time.time() - time_start_collect_experience_once
+        wandb.log({"8 throughout/EnvRateWithReset": local_steps_per_epoch / time_collect_experience_once})
         wandb.log({"7_1 spup increase/TotalEnvInteracts": (epoch + 1) * local_steps_per_epoch})
         life_long_time = time.time() - life_long_time_start
         wandb.log({"7_1 spup increase/Time": life_long_time})
@@ -66,6 +72,10 @@ def main():
         data = replay_buffer.get(device=DEVICE)
 
         update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
+
+        # 调整学习率
+        scheduler_pi.step()
+        scheduler_vf.step()
 
         torch.save(ac.state_dict(), "./data/interim/para_actionAug_temp.pt")
 
