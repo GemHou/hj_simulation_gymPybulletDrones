@@ -125,6 +125,49 @@ class BaseRLAviary(BaseAviary):
                        physicsClientId=self.CLIENT
                        )
         else:
+            # p.loadURDF("block.urdf",
+            #            [1, 0, .1],
+            #            p.getQuaternionFromEuler([0, 0, 0]),
+            #            physicsClientId=self.CLIENT
+            #            )
+            # p.loadURDF("cube_small.urdf",
+            #            [0, 1, .1],
+            #            p.getQuaternionFromEuler([0, 0, 0]),
+            #            physicsClientId=self.CLIENT
+            #            )
+            # p.loadURDF("duck_vhacd.urdf",
+            #            [-1, 0, .1],
+            #            p.getQuaternionFromEuler([0, 0, 0]),
+            #            physicsClientId=self.CLIENT
+            #            )
+            # p.loadURDF("teddy_vhacd.urdf",
+            #            [0, -1, .1],
+            #            p.getQuaternionFromEuler([0, 0, 0]),
+            #            physicsClientId=self.CLIENT
+            #            )
+            # p.loadURDF("box.urdf",
+            #            [0, -1, .1],
+            #            p.getQuaternionFromEuler([0, 0, 0]),
+            #            physicsClientId=self.CLIENT
+            #            )
+            p.loadURDF("samurai.urdf",
+                         physicsClientId=self.CLIENT
+                         )
+            # p.loadURDF("duck_vhacd.urdf",
+            #              [-.5, -.5, .05],
+            #              p.getQuaternionFromEuler([0, 0, 0]),
+            #              physicsClientId=self.CLIENT
+            #              )
+            # p.loadURDF("cube_no_rotation.urdf",
+            #              [-.5, -2.5, .5],
+            #              p.getQuaternionFromEuler([0, 0, 0]),
+            #              physicsClientId=self.CLIENT
+            #              )
+            # p.loadURDF("sphere2.urdf",
+            #              [0, 2, .5],
+            #              p.getQuaternionFromEuler([0, 0, 0]),
+            #              physicsClientId=self.CLIENT
+            #              )
             pass
 
     ################################################################################

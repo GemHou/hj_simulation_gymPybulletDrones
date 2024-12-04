@@ -9,7 +9,7 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-freq10-initRandom2-paraStable-20241203-1708"
+RESUME_NAME = "5900X-actionMotor-freq10-initRandom2-paraStable-20241203-2120"
 EPOCH = 2000  # 1000 5000 2000
 
 
