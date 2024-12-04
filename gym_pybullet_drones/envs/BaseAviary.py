@@ -1,6 +1,7 @@
 import os
 from sys import platform
 import time
+import math
 import collections
 from datetime import datetime
 import xml.etree.ElementTree as etxml
@@ -211,7 +212,7 @@ class BaseAviary(gym.Env):
             self.INIT_XYZS = np.vstack([np.array([x * 4 * self.L for x in range(self.NUM_DRONES)]), \
                                         np.array([y * 4 * self.L for y in range(self.NUM_DRONES)]), \
                                         np.ones(self.NUM_DRONES) * (
-                                                    self.COLLISION_H / 2 - self.COLLISION_Z_OFFSET + .1)]).transpose().reshape(
+                                                self.COLLISION_H / 2 - self.COLLISION_Z_OFFSET + .1)]).transpose().reshape(
                 self.NUM_DRONES, 3)
         elif np.array(initial_xyzs).shape == (self.NUM_DRONES, 3):
             self.INIT_XYZS = initial_xyzs
@@ -428,7 +429,7 @@ class BaseAviary(gym.Env):
               "——— wall-clock time {:.1f}s,".format(time.time() - self.RESET_TIME),
               "simulation time {:.1f}s@{:d}Hz ({:.2f}x)".format(self.step_counter * self.PYB_TIMESTEP, self.PYB_FREQ,
                                                                 (self.step_counter * self.PYB_TIMESTEP) / (
-                                                                            time.time() - self.RESET_TIME)))
+                                                                        time.time() - self.RESET_TIME)))
         for i in range(self.NUM_DRONES):
             print("[INFO] BaseAviary.render() ——— drone {:d}".format(i),
                   "——— x {:+06.2f}, y {:+06.2f}, z {:+06.2f}".format(self.pos[i, 0], self.pos[i, 1], self.pos[i, 2]),
@@ -476,16 +477,37 @@ class BaseAviary(gym.Env):
 
     ################################################################################
 
+    def hj_calc_orientation(self):
+        theta_x = 0
+        theta_y = 0
+        theta_z = 0
+        theta_x_rad = math.radians(theta_x)
+        theta_y_rad = math.radians(theta_y)
+        theta_z_rad = math.radians(theta_z)
+        # 计算四元数的各个分量
+        w = math.cos(theta_x_rad / 2) * math.cos(theta_y_rad / 2) * math.cos(theta_z_rad / 2) + \
+            math.sin(theta_x_rad / 2) * math.sin(theta_y_rad / 2) * math.sin(theta_z_rad / 2)
+        x = math.sin(theta_x_rad / 2) * math.cos(theta_y_rad / 2) * math.cos(theta_z_rad / 2) - \
+            math.cos(theta_x_rad / 2) * math.sin(theta_y_rad / 2) * math.sin(theta_z_rad / 2)
+        y = math.cos(theta_x_rad / 2) * math.sin(theta_y_rad / 2) * math.cos(theta_z_rad / 2) + \
+            math.sin(theta_x_rad / 2) * math.cos(theta_y_rad / 2) * math.sin(theta_z_rad / 2)
+        z = math.cos(theta_x_rad / 2) * math.cos(theta_y_rad / 2) * math.sin(theta_z_rad / 2) - \
+            math.sin(theta_x_rad / 2) * math.sin(theta_y_rad / 2) * math.cos(theta_z_rad / 2)
+        return w, x, y, z
+
     def hj_create_cylinder(self):
+        w, x, y, z = self.hj_calc_orientation()
+
         # 创建圆柱体的物理碰撞形状
-        cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.2, height=1)
+        cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.1, height=6)
         # 创建圆柱体的可视化形状
-        cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.2, length=1,
-                                                      rgbaColor=[1, 0, 0, 1])
+        cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.1, length=6,
+                                                      rgbaColor=[123 / 255, 105 / 255, 72 / 255, 1])
         # 创建多体对象
         cylinder_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cylinder_collision_shape,
                                             baseVisualShapeIndex=cylinder_visual_shape,
-                                            basePosition=[2, 0.1, 0.5])
+                                            basePosition=[2, 0.1, 3],
+                                            baseOrientation=[x, y, z, w])  # , baseOrientation=[0, 0, 0, 0]
 
     def _housekeeping(self):
         """Housekeeping function.
@@ -967,7 +989,7 @@ class BaseAviary(gym.Env):
         if np.any(np.abs(action) > 1):
             print("\n[ERROR] it", self.step_counter, "in BaseAviary._normalizedActionToRPM(), out-of-bound action")
         return np.where(action <= 0, (action + 1) * self.HOVER_RPM, self.HOVER_RPM + (
-                    self.MAX_RPM - self.HOVER_RPM) * action)  # Non-linear mapping: -1 -> 0, 0 -> HOVER_RPM, 1 -> MAX_RPM`
+                self.MAX_RPM - self.HOVER_RPM) * action)  # Non-linear mapping: -1 -> 0, 0 -> HOVER_RPM, 1 -> MAX_RPM`
 
     ################################################################################
 
