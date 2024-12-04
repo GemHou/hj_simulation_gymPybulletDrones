@@ -150,9 +150,9 @@ class BaseRLAviary(BaseAviary):
             #            p.getQuaternionFromEuler([0, 0, 0]),
             #            physicsClientId=self.CLIENT
             #            )
-            p.loadURDF("samurai.urdf",
-                         physicsClientId=self.CLIENT
-                         )
+            # p.loadURDF("samurai.urdf",
+            #              physicsClientId=self.CLIENT
+            #              )
             # p.loadURDF("duck_vhacd.urdf",
             #              [-.5, -.5, .05],
             #              p.getQuaternionFromEuler([0, 0, 0]),

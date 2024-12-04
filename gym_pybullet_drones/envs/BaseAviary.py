@@ -496,18 +496,34 @@ class BaseAviary(gym.Env):
         return w, x, y, z
 
     def hj_create_cylinder(self):
-        w, x, y, z = self.hj_calc_orientation()
-
         # 创建圆柱体的物理碰撞形状
         cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.1, height=6)
         # 创建圆柱体的可视化形状
+        # 40/255, 32/255, 19/255
+        # 123 / 255, 105 / 255, 72 / 255
         cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.1, length=6,
                                                       rgbaColor=[123 / 255, 105 / 255, 72 / 255, 1])
         # 创建多体对象
         cylinder_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cylinder_collision_shape,
                                             baseVisualShapeIndex=cylinder_visual_shape,
-                                            basePosition=[2, 0.1, 3],
-                                            baseOrientation=[x, y, z, w])  # , baseOrientation=[0, 0, 0, 0]
+                                            basePosition=[8, 0.1, 3.1],
+                                            )  # baseOrientation=[x, y, z, w]
+
+        cylinder_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cylinder_collision_shape,
+                                            baseVisualShapeIndex=cylinder_visual_shape,
+                                            basePosition=[-8, 0.1, 3.1],
+                                            )  # baseOrientation=[x, y, z, w]
+
+        # 创建扁平立方体的物理碰撞形状
+        cube_collision_shape = pbl.createCollisionShape(pbl.GEOM_BOX, halfExtents=[10, 10, 0.1])
+        # 创建扁平立方体的可视化形状
+        # 63/255, 30/255, 8/255
+        cube_visual_shape = pbl.createVisualShape(pbl.GEOM_BOX, halfExtents=[10, 10, 0.1],
+                                                  rgbaColor=[116/255, 106/255, 24/255, 1])  # 颜色可以自定义
+        # 创建多体对象
+        cube_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cube_collision_shape,
+                                        baseVisualShapeIndex=cube_visual_shape,
+                                        basePosition=[0, 0, 0.05])  # 位置可以自定义
 
     def _housekeeping(self):
         """Housekeeping function.
