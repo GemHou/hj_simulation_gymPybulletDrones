@@ -59,9 +59,9 @@ def generate_action_pid(obs_ma):
     goal_vel_z = 1
     wandb.log({"ang/goal_ang_x": goal_ang_x})
     wandb.log({"ang/goal_ang_my": goal_ang_my})
-    action_motor = [goal_ang_x, goal_ang_my, goal_vel_z]
+    action_ang = [goal_ang_x, goal_ang_my, goal_vel_z]
 
-    return action_motor
+    return action_ang
 
 
 def main():
@@ -69,30 +69,30 @@ def main():
         # mode="offline",
         project="project-drone-test-20241122",
     )
-    env = HjAviaryActionAng(gui=True, ctrl_freq=10)
+    env = HjAviaryActionAng(gui=True)
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
-    state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
-                            map_location=torch.device(DEVICE))
-    ac.load_state_dict(state_dict)
+    # state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
+    #                         map_location=torch.device(DEVICE))
+    # ac.load_state_dict(state_dict)
 
-    for i in range(20):
+    for i in range(2):
         obs_ma, info = env.reset()
         for j in range(1000):
             if CONTROL_MODE == "RL":
                 ang_my, ang_x, pos_z, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
-                action_motor, _, _ = ac.step(obs_tensor)
+                action_ang, _, _ = ac.step(obs_tensor)
             elif CONTROL_MODE == "PID":
-                action_motor = generate_action_pid(obs_ma)
+                action_ang = generate_action_pid(obs_ma)
             else:
                 raise
-            if j % 50 < 25:
-                action_motor = [0, 0, 10, 0]
+            if j % 50 < 20:
+                action_ang = [2, 2, 2, 0]
             else:
-                action_motor = [0, 0, -10, 0]
-            action_ma = np.array([action_motor])
+                action_ang = [2, 2, -2, 0]
+            action_ma = np.array([action_ang])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
             obs_ma = next_obs_ma

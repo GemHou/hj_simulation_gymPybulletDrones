@@ -4,9 +4,9 @@ import numpy as np
 
 from gym_pybullet_drones.envs import HoverAviary
 
-TARGET_X = 10.5
-TARGET_Y = 0.5
-TARGET_Z = 0.5
+TARGET_X = 0
+TARGET_Y = 0
+TARGET_Z = 2.5
 
 
 class HjAviary(HoverAviary):
@@ -17,7 +17,7 @@ class HjAviary(HoverAviary):
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
-        if pos_z < 0.08:
+        if pos_z < 1.1:
             reward_done = -10
         else:
             reward_done = 0
@@ -42,13 +42,10 @@ class HjAviary(HoverAviary):
         target_x = TARGET_X
         target_y = TARGET_Y
         target_z = TARGET_Z
-        if pos_z < 0.08:
+        dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
+        if pos_z < 1.1:
             done = True
-        elif abs(pos_x - target_x) > 20:
-            done = True
-        elif abs(pos_y - target_y) > 5:
-            done = True
-        elif abs(pos_z - target_z) > 5:
+        elif dis_target > 30:
             done = True
         else:
             done = False
@@ -80,8 +77,8 @@ class HjAviaryActionAng(HjAviary):
         # if action_vel_z > 1:
         #
         # action_ang
-        action_ang_x = (goal_ang_x - ang_x) * 0.2
-        action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
+        action_ang_x = (goal_ang_x - ang_x) * 0.05
+        action_ang_my = (goal_ang_my - ang_my) * 0.05  # 0.01
         action_ang_z = 0  # 0.01
         # final
         # wandb.log({"action/action_vel_z": action_vel_z})

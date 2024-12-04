@@ -9,13 +9,13 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-freq10-initRandom2-paraStable-20241203-2120"
+RESUME_NAME = "5900X-actionMotor-sceneArgi-20241204-1855"
 EPOCH = 2000  # 1000 5000 2000
 
 
 def main():
     local_steps_per_epoch = 1000  # 2000 3000
-    max_ep_len = 200
+    max_ep_len = 500
     clip_ratio = 0.07  # 0.1 0.07
     train_pi_iters = 80
     train_v_iters = 80
@@ -31,7 +31,7 @@ def main():
         resume=RESUME_NAME  # HjScenarioEnv
     )
 
-    env = HjAviary(gui=False, ctrl_freq=10, pyb_freq=100)  # , ctrl_freq=10, pyb_freq=100
+    env = HjAviary(gui=False)  # , ctrl_freq=10, pyb_freq=100
 
     print("env.CTRL_FREQ: ", env.CTRL_FREQ)
     print("env.ACTION_BUFFER_SIZE: ", env.ACTION_BUFFER_SIZE)

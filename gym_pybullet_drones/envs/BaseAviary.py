@@ -24,9 +24,12 @@ class BaseAviary(gym.Env):
     ################################################################################
 
     def hj_random_init(self):
-        x = np.random.uniform(-5, 10)
-        y = np.random.uniform(-5, 5)
-        z = np.random.uniform(1, 5)
+        # x = np.random.uniform(-15, 15)
+        # y = np.random.uniform(-15, 15)
+        # z = np.random.uniform(2, 10)
+        x = np.random.uniform(-1, 1)
+        y = np.random.uniform(-1, 1)
+        z = np.random.uniform(2, 3)
         initial_xyzs = np.vstack([[x, y, z]])
         return initial_xyzs
 
@@ -308,7 +311,7 @@ class BaseAviary(gym.Env):
             in each subclass for its format.
 
         """
-        # action = np.clip(action, a_min=-10, a_max=10)
+        action = np.clip(action, a_min=-5, a_max=5)
         #### Save PNG video frames if RECORD=True and GUI=False ####
         if self.RECORD and not self.GUI and self.step_counter % self.CAPTURE_FREQ == 0:
             [w, h, rgb, dep, seg] = pbl.getCameraImage(width=self.VID_WIDTH,
@@ -569,7 +572,8 @@ class BaseAviary(gym.Env):
                           self.INIT_XYZS[i, :],
                           pbl.getQuaternionFromEuler(self.INIT_RPYS[i, :]),
                           flags=pbl.URDF_USE_INERTIA_FROM_FILE,
-                          physicsClientId=self.CLIENT
+                          physicsClientId=self.CLIENT,
+                          globalScaling=15,
                           ) for i in range(self.NUM_DRONES)])
         #### Remove default damping #################################
         # for i in range(self.NUM_DRONES):
@@ -1081,7 +1085,7 @@ class BaseAviary(gym.Env):
 
         """
         URDF_TREE = etxml.parse(pkg_resources.resource_filename('gym_pybullet_drones', 'assets/' + self.URDF)).getroot()
-        M = float(URDF_TREE[1][0][1].attrib['value'])
+        M = float(URDF_TREE[1][0][1].attrib['value']) # * 15 #  * 15 * 15
         L = float(URDF_TREE[0].attrib['arm'])
         THRUST2WEIGHT_RATIO = float(URDF_TREE[0].attrib['thrust2weight'])
         IXX = float(URDF_TREE[1][0][2].attrib['ixx'])
@@ -1091,10 +1095,10 @@ class BaseAviary(gym.Env):
         J_INV = np.linalg.inv(J)
         KF = float(URDF_TREE[0].attrib['kf'])
         KM = float(URDF_TREE[0].attrib['km'])
-        COLLISION_H = float(URDF_TREE[1][2][1][0].attrib['length'])
-        COLLISION_R = float(URDF_TREE[1][2][1][0].attrib['radius'])
-        COLLISION_SHAPE_OFFSETS = [float(s) for s in URDF_TREE[1][2][0].attrib['xyz'].split(' ')]
-        COLLISION_Z_OFFSET = COLLISION_SHAPE_OFFSETS[2]
+        COLLISION_H = float(URDF_TREE[1][2][1][0].attrib['length']) #* 15
+        COLLISION_R = float(URDF_TREE[1][2][1][0].attrib['radius']) #* 15
+        COLLISION_SHAPE_OFFSETS = [float(s) for s in URDF_TREE[1][2][0].attrib['xyz'].split(' ')]#  * 15
+        COLLISION_Z_OFFSET = COLLISION_SHAPE_OFFSETS[2] #* 15
         MAX_SPEED_KMH = float(URDF_TREE[0].attrib['max_speed_kmh'])
         GND_EFF_COEFF = float(URDF_TREE[0].attrib['gnd_eff_coeff'])
         PROP_RADIUS = float(URDF_TREE[0].attrib['prop_radius'])
