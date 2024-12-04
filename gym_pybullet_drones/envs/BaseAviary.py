@@ -477,10 +477,7 @@ class BaseAviary(gym.Env):
 
     ################################################################################
 
-    def hj_calc_orientation(self):
-        theta_x = 0
-        theta_y = 0
-        theta_z = 0
+    def hj_calc_orientation(self, theta_x, theta_y, theta_z):
         theta_x_rad = math.radians(theta_x)
         theta_y_rad = math.radians(theta_y)
         theta_z_rad = math.radians(theta_z)
@@ -496,34 +493,34 @@ class BaseAviary(gym.Env):
         return w, x, y, z
 
     def hj_create_cylinder(self):
-        # 创建圆柱体的物理碰撞形状
+        cube_collision_shape = pbl.createCollisionShape(pbl.GEOM_BOX, halfExtents=[10, 10, 0.1])
+        cube_visual_shape = pbl.createVisualShape(pbl.GEOM_BOX, halfExtents=[20, 20, 0.1],
+                                                  rgbaColor=[96/255, 110/255, 59/255, 1])
+        cube_body = pbl.createMultiBody(baseMass=10, baseCollisionShapeIndex=cube_collision_shape,
+                                        baseVisualShapeIndex=cube_visual_shape,
+                                        basePosition=[0, 0, 0.05])
+
         cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.1, height=6)
-        # 创建圆柱体的可视化形状
-        # 40/255, 32/255, 19/255
-        # 123 / 255, 105 / 255, 72 / 255
         cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.1, length=6,
                                                       rgbaColor=[123 / 255, 105 / 255, 72 / 255, 1])
-        # 创建多体对象
         cylinder_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cylinder_collision_shape,
                                             baseVisualShapeIndex=cylinder_visual_shape,
-                                            basePosition=[8, 0.1, 3.1],
+                                            basePosition=[8, 0, 3.1],
                                             )  # baseOrientation=[x, y, z, w]
-
         cylinder_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cylinder_collision_shape,
                                             baseVisualShapeIndex=cylinder_visual_shape,
-                                            basePosition=[-8, 0.1, 3.1],
+                                            basePosition=[-8, 0, 3.1],
                                             )  # baseOrientation=[x, y, z, w]
 
-        # 创建扁平立方体的物理碰撞形状
-        cube_collision_shape = pbl.createCollisionShape(pbl.GEOM_BOX, halfExtents=[10, 10, 0.1])
-        # 创建扁平立方体的可视化形状
-        # 63/255, 30/255, 8/255
-        cube_visual_shape = pbl.createVisualShape(pbl.GEOM_BOX, halfExtents=[10, 10, 0.1],
-                                                  rgbaColor=[116/255, 106/255, 24/255, 1])  # 颜色可以自定义
-        # 创建多体对象
-        cube_body = pbl.createMultiBody(baseMass=1, baseCollisionShapeIndex=cube_collision_shape,
-                                        baseVisualShapeIndex=cube_visual_shape,
-                                        basePosition=[0, 0, 0.05])  # 位置可以自定义
+        cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.02, height=16)
+        cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.02, length=16,
+                                                      rgbaColor=[14 / 255, 15 / 255, 17 / 255, 1])
+        w, x, y, z = self.hj_calc_orientation(0, 90, 0)
+        cylinder_body = pbl.createMultiBody(baseMass=0.1, baseCollisionShapeIndex=cylinder_collision_shape,
+                                            baseVisualShapeIndex=cylinder_visual_shape,
+                                            basePosition=[0, 0, 6.2],
+                                            baseOrientation=[x, y, z, w],
+                                            )  #
 
     def _housekeeping(self):
         """Housekeeping function.
