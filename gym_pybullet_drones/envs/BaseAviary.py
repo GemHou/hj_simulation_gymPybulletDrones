@@ -515,15 +515,21 @@ class BaseAviary(gym.Env):
                                             basePosition=[-8, 0, 3.1],
                                             )  # baseOrientation=[x, y, z, w]
 
-        cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.02, height=16)
-        cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.02, length=16,
-                                                      rgbaColor=[14 / 255, 15 / 255, 17 / 255, 1])
-        w, x, y, z = self.hj_calc_orientation(0, 90, 0)
-        cylinder_body = pbl.createMultiBody(baseMass=0.1, baseCollisionShapeIndex=cylinder_collision_shape,
-                                            baseVisualShapeIndex=cylinder_visual_shape,
-                                            basePosition=[0, 0, 6.2],
-                                            baseOrientation=[x, y, z, w],
-                                            )  #
+        # cylinder_collision_shape = pbl.createCollisionShape(pbl.GEOM_CYLINDER, radius=0.02, height=16)
+        # cylinder_visual_shape = pbl.createVisualShape(pbl.GEOM_CYLINDER, radius=0.02, length=16,
+        #                                               rgbaColor=[14 / 255, 15 / 255, 17 / 255, 1])
+        # w, x, y, z = self.hj_calc_orientation(0, 90, 0)
+        # cylinder_body = pbl.createMultiBody(baseMass=0.1, baseCollisionShapeIndex=cylinder_collision_shape,
+        #                                     baseVisualShapeIndex=cylinder_visual_shape,
+        #                                     basePosition=[0, 0, 6.2],
+        #                                     baseOrientation=[x, y, z, w],
+        #                                     )  #
+        cube_collision_shape = pbl.createCollisionShape(pbl.GEOM_BOX, halfExtents=[8, 0.02, 0.02])
+        cube_visual_shape = pbl.createVisualShape(pbl.GEOM_BOX, halfExtents=[8, 0.02, 0.02],
+                                                  rgbaColor=[14 / 255, 15 / 255, 17 / 255, 1])
+        cube_body = pbl.createMultiBody(baseMass=0.1, baseCollisionShapeIndex=cube_collision_shape,
+                                        baseVisualShapeIndex=cube_visual_shape,
+                                        basePosition=[0, 0, 6.2])
 
     def _housekeeping(self):
         """Housekeeping function.
