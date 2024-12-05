@@ -27,8 +27,8 @@ class BaseAviary(gym.Env):
         # x = np.random.uniform(-15, 15)
         # y = np.random.uniform(-15, 15)
         # z = np.random.uniform(2, 10)
-        x = np.random.uniform(-1, 1)
-        y = np.random.uniform(-1, 1)
+        x = -12 + np.random.uniform(-1, 1)
+        y = np.random.uniform(-2, 2)
         z = np.random.uniform(2, 3)
         initial_xyzs = np.vstack([[x, y, z]])
         return initial_xyzs

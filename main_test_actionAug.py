@@ -42,12 +42,12 @@ def analyse_obs(obs_ma):
 def generate_action_pid(obs_ma):
     ang_my, ang_x, pos_z, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
     # goal_pos
-    goal_pos_z = 4
+    goal_pos_z = 2.5
     wandb.log({"pos/goal_pos_z": goal_pos_z})
     # goal_vel
     goal_vel_z = (goal_pos_z - pos_z) * 0.5
-    goal_vel_x = 3
-    goal_vel_y = -2
+    goal_vel_x = 13.8
+    goal_vel_y = 0
     wandb.log({"vel/goal_vel_z": goal_vel_z})
     wandb.log({"vel/goal_vel_x": goal_vel_x})
     wandb.log({"vel/goal_vel_y": goal_vel_y})
@@ -79,7 +79,7 @@ def main():
     else:
         ac = None
 
-    for i in range(2):
+    for i in range(10):
         obs_ma, info = env.reset()
         for j in range(1000):
             if CONTROL_MODE == "RL":
