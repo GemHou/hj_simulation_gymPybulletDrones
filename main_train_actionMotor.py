@@ -9,12 +9,12 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-sceneArgi-20241204-1916"
-EPOCH = 2000  # 1000 5000 2000
+RESUME_NAME = "5900X-actionMotor-bs2000-ep1000-20241205"
+EPOCH = 1000  # 1000 5000 2000
 
 
 def main():
-    local_steps_per_epoch = 1000  # 2000 3000
+    local_steps_per_epoch = 2000  # 2000 3000
     max_ep_len = 500
     clip_ratio = 0.07  # 0.1 0.07
     train_pi_iters = 80
