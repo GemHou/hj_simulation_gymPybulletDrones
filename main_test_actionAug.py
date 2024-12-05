@@ -9,7 +9,7 @@ from utils_rl import MLPActorCritic
 from utils_drone import HjAviaryActionAng
 
 DEVICE = torch.device("cpu")
-CONTROL_MODE = "RL"  # PID RL
+CONTROL_MODE = "PID"  # PID RL
 
 
 def analyse_obs(obs_ma):
@@ -42,21 +42,21 @@ def analyse_obs(obs_ma):
 def generate_action_pid(obs_ma):
     ang_my, ang_x, pos_z, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
     # goal_pos
-    goal_pos_z = 2
+    goal_pos_z = 4
     wandb.log({"pos/goal_pos_z": goal_pos_z})
     # goal_vel
     goal_vel_z = (goal_pos_z - pos_z) * 0.5
-    goal_vel_x = 1
-    goal_vel_y = -0.5
+    goal_vel_x = 3
+    goal_vel_y = -2
     wandb.log({"vel/goal_vel_z": goal_vel_z})
     wandb.log({"vel/goal_vel_x": goal_vel_x})
     wandb.log({"vel/goal_vel_y": goal_vel_y})
     # goal_ang
     goal_ang_x = (goal_vel_x - vel_x) * 0.02 / 0.02  # 0.02~0.05
     goal_ang_my = (goal_vel_y - vel_y) * -0.02 / 0.02
-    goal_ang_x = 1
-    goal_ang_my = 1
-    goal_vel_z = 1
+    # goal_ang_x = 1
+    # goal_ang_my = 1
+    # goal_vel_z = 1
     wandb.log({"ang/goal_ang_x": goal_ang_x})
     wandb.log({"ang/goal_ang_my": goal_ang_my})
     action_ang = [goal_ang_x, goal_ang_my, goal_vel_z]
@@ -71,11 +71,13 @@ def main():
     )
     env = HjAviaryActionAng(gui=True)
 
-    ac = MLPActorCritic(env.observation_space, env.action_space)
-
-    # state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
-    #                         map_location=torch.device(DEVICE))
-    # ac.load_state_dict(state_dict)
+    if CONTROL_MODE == "RL":
+        ac = MLPActorCritic(env.observation_space, env.action_space)
+        state_dict = torch.load("./data/interim/para_actionAug_temp.pt",
+                                map_location=torch.device(DEVICE))
+        ac.load_state_dict(state_dict)
+    else:
+        ac = None
 
     for i in range(2):
         obs_ma, info = env.reset()
@@ -88,10 +90,10 @@ def main():
                 action_ang = generate_action_pid(obs_ma)
             else:
                 raise
-            if j % 50 < 20:
-                action_ang = [2, 2, 2, 0]
-            else:
-                action_ang = [2, 2, -2, 0]
+            # if j % 50 < 20:
+            #     action_ang = [2, 2, 2, 0]
+            # else:
+            #     action_ang = [2, 2, -2, 0]
             action_ma = np.array([action_ang])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
