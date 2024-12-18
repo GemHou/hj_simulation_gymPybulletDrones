@@ -61,6 +61,7 @@ class HjAviaryActionAng(HjAviary):
         goal_ang_x = action_ma_aug[0, 0] * 0.02
         goal_ang_my = action_ma_aug[0, 1] * 0.02
         goal_vel_z = action_ma_aug[0, 2]
+        goal_ang_z = 0  # -0.02 0 0.02
         # if goal_vel_z < 0:
         #     goal_vel_z = 0
         # get obs
@@ -68,6 +69,10 @@ class HjAviaryActionAng(HjAviary):
         ang = state[13:16]
         ang_my = ang[0]
         ang_x = ang[1]
+        ang_z = ang[2]
+        if abs(ang_z) > 0.02:
+            goal_ang_x = 0
+            goal_ang_my = 0
         vel = state[10:13]
         vel_z = vel[2]
         # PID controller
@@ -79,16 +84,22 @@ class HjAviaryActionAng(HjAviary):
         # action_ang
         action_ang_x = (goal_ang_x - ang_x) * 0.05
         action_ang_my = (goal_ang_my - ang_my) * 0.05  # 0.01
-        action_ang_z = 0  # 0.01
+        action_ang_z = (goal_ang_z - ang_z) * 0.2  # 0.01
         # final
         # wandb.log({"action/action_vel_z": action_vel_z})
         # wandb.log({"action/action_ang_x": action_ang_x})
         # wandb.log({"action/action_ang_my": action_ang_my})
         # wandb.log({"action/action_ang_z": action_ang_z})
+        # if abs(ang_z) < 0.02:
         action_motor = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
                         action_vel_z - action_ang_my + action_ang_x + action_ang_z,
                         action_vel_z + action_ang_my + action_ang_x - action_ang_z,
                         action_vel_z + action_ang_my - action_ang_x + action_ang_z]
+        # else:
+        #     action_motor = [action_vel_z - action_ang_z,
+        #                     action_vel_z + action_ang_z,
+        #                     action_vel_z - action_ang_z,
+        #                     action_vel_z + action_ang_z]
         action_ma_motor = np.array([action_motor])
         # action_ma_motor = np.clip(action_ma_motor, a_min=-10, a_max=10)
         obs, reward, terminated, truncated, info = super().step(action_ma_motor)

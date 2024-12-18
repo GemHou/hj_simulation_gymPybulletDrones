@@ -46,7 +46,7 @@ def generate_action_pid(obs_ma):
     wandb.log({"pos/goal_pos_z": goal_pos_z})
     # goal_vel
     goal_vel_z = (goal_pos_z - pos_z) * 0.5
-    goal_vel_x = 13.8
+    goal_vel_x = 5
     goal_vel_y = 0
     wandb.log({"vel/goal_vel_z": goal_vel_z})
     wandb.log({"vel/goal_vel_x": goal_vel_x})
