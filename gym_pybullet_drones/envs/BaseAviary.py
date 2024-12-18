@@ -15,7 +15,7 @@ import pybullet_data
 import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
-SCENARIO = "Arch"  # None "Farm" "Arch"
+SCENARIO = None  # None "Farm" "Arch"
 
 
 class BaseAviary(gym.Env):
@@ -26,12 +26,12 @@ class BaseAviary(gym.Env):
     ################################################################################
 
     def hj_random_init(self):
-        # x = np.random.uniform(-15, 15)
-        # y = np.random.uniform(-15, 15)
-        # z = np.random.uniform(2, 10)
-        x = -12 + np.random.uniform(-1, 1)
-        y = np.random.uniform(-2, 2)
-        z = np.random.uniform(2, 3)
+        x = np.random.uniform(-15, 15)
+        y = np.random.uniform(-15, 15)
+        z = np.random.uniform(2, 10)
+        # x = -12 + np.random.uniform(-1, 1)
+        # y = np.random.uniform(-2, 2)
+        # z = np.random.uniform(2, 3)
         initial_xyzs = np.vstack([[x, y, z]])
         return initial_xyzs
 
