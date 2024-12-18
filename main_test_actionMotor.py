@@ -83,11 +83,11 @@ def main():
 
     ac = MLPActorCritic(env.observation_space, env.action_space)
 
-    state_dict = torch.load("./data/interim/para_actionMotor_temp.pt",
-                            map_location=torch.device(DEVICE))
-    ac.load_state_dict(state_dict)
+    for i in range(100):
+        state_dict = torch.load("./data/interim/para_actionMotor_temp.pt",
+                                map_location=torch.device(DEVICE))
+        ac.load_state_dict(state_dict)
 
-    for i in range(10):
         obs_ma, info = env.reset()
         for j in range(500):
             if CONTROL_MODE == "RL":
