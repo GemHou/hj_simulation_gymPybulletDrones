@@ -15,6 +15,8 @@ import pybullet_data
 import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
+SCENARIO = "Arch"  # None "Farm" "Arch"
+
 
 class BaseAviary(gym.Env):
     """Base class for "drone aviary" Gym environments."""
@@ -561,7 +563,8 @@ class BaseAviary(gym.Env):
         #### Set PyBullet's parameters #############################
         pbl.setGravity(0, 0, -self.G, physicsClientId=self.CLIENT)
 
-        self.hj_create_cylinder()
+        if SCENARIO == "Farm":
+            self.hj_create_cylinder()
 
         pbl.setRealTimeSimulation(0, physicsClientId=self.CLIENT)
         pbl.setTimeStep(self.PYB_TIMESTEP, physicsClientId=self.CLIENT)

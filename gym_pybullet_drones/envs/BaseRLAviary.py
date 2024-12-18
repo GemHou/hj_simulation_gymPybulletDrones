@@ -8,6 +8,8 @@ from gym_pybullet_drones.envs.BaseAviary import BaseAviary
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType, ImageType
 from gym_pybullet_drones.control.DSLPIDControl import DSLPIDControl
 
+from gym_pybullet_drones.envs.BaseAviary import SCENARIO
+
 class BaseRLAviary(BaseAviary):
     """Base single and multi-agent environment class for reinforcement learning."""
     
@@ -125,6 +127,10 @@ class BaseRLAviary(BaseAviary):
                        physicsClientId=self.CLIENT
                        )
         else:
+            if SCENARIO == "Arch":
+                p.loadURDF("samurai.urdf",
+                           physicsClientId=self.CLIENT
+                           )
             # p.loadURDF("block.urdf",
             #            [1, 0, .1],
             #            p.getQuaternionFromEuler([0, 0, 0]),
@@ -150,9 +156,6 @@ class BaseRLAviary(BaseAviary):
             #            p.getQuaternionFromEuler([0, 0, 0]),
             #            physicsClientId=self.CLIENT
             #            )
-            # p.loadURDF("samurai.urdf",
-            #              physicsClientId=self.CLIENT
-            #              )
             # p.loadURDF("duck_vhacd.urdf",
             #              [-.5, -.5, .05],
             #              p.getQuaternionFromEuler([0, 0, 0]),
