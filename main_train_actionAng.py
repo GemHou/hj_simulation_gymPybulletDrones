@@ -88,7 +88,7 @@ def main():
             scheduler_pi.step()
             scheduler_vf.step()
 
-        torch.save(ac.state_dict(), "./data/interim/para_actionAug_temp.pt")
+        torch.save(ac.state_dict(), "./data/interim/para_actionang_temp.pt")
 
     print("Finished...")
 
