@@ -55,12 +55,12 @@ class HjAviary(HoverAviary):
 
 class HjAviaryActionAng(HjAviary):
     def step(self,
-             action_ma_aug
+             action_ma_ang
              ):
         # analyse action
-        goal_ang_x = action_ma_aug[0, 0]
-        goal_ang_my = action_ma_aug[0, 1]
-        goal_vel_z = action_ma_aug[0, 2]
+        goal_ang_x = action_ma_ang[0, 0]
+        goal_ang_my = action_ma_ang[0, 1]
+        goal_vel_z = action_ma_ang[0, 2]
         goal_ang_z = 0  # -0.02 0 0.02
         # if goal_vel_z < 0:
         #     goal_vel_z = 0
