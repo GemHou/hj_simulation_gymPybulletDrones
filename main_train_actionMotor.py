@@ -9,10 +9,10 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-stage1-h4-20241219-1047"
+RESUME_NAME = "5900X-actionMotor-stage1-h4-20241219-1121"
 EPOCH = 5000  # 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
-PERCENT_MODE = True  # True False
+PERCENT_MODE = False  # True False
 
 
 def main():

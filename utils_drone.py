@@ -58,8 +58,8 @@ class HjAviaryActionAng(HjAviary):
              action_ma_aug
              ):
         # analyse action
-        goal_ang_x = action_ma_aug[0, 0] * 0.02
-        goal_ang_my = action_ma_aug[0, 1] * 0.02
+        goal_ang_x = action_ma_aug[0, 0]
+        goal_ang_my = action_ma_aug[0, 1]
         goal_vel_z = action_ma_aug[0, 2]
         goal_ang_z = 0  # -0.02 0 0.02
         # if goal_vel_z < 0:
