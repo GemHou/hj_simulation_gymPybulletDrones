@@ -6,7 +6,7 @@ from gym_pybullet_drones.envs import HoverAviary
 
 TARGET_X = 0
 TARGET_Y = 0
-TARGET_Z = 2.5
+TARGET_Z = 3
 
 
 class HjAviary(HoverAviary):
@@ -27,7 +27,7 @@ class HjAviary(HoverAviary):
         target_y = TARGET_Y
         target_z = TARGET_Z
         dis_target = math.sqrt((pos_x - target_x)**2 + (pos_y - target_y)**2 + (pos_z - target_z)**2)
-        reward_target = 1 / (dis_target + 1)
+        reward_target = 1 / (dis_target / 5 + 1)
         # reward_target = 5 - (abs(pos_x - target_x) + abs(pos_y - target_y) + abs(pos_z - target_z))
         # reward_target = min(reward_target, 10)
         reward = reward_done + reward_target  # + reward_z + reward_xy
@@ -43,9 +43,9 @@ class HjAviary(HoverAviary):
         target_y = TARGET_Y
         target_z = TARGET_Z
         dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
-        if pos_z < 1.1:
+        if pos_z < 2:
             done = True
-        elif dis_target > 30:
+        elif dis_target > 100:
             done = True
         else:
             done = False

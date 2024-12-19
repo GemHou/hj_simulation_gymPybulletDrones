@@ -15,7 +15,7 @@ import pybullet_data
 import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
-SCENARIO = None  # None "Farm" "Arch"
+SCENARIO = "None"  # "None" "Farm" "Arch"
 
 
 class BaseAviary(gym.Env):
@@ -25,13 +25,28 @@ class BaseAviary(gym.Env):
 
     ################################################################################
 
-    def hj_random_init(self):
-        x = np.random.uniform(-15, 15)
-        y = np.random.uniform(-15, 15)
-        z = np.random.uniform(2, 10)
-        # x = -12 + np.random.uniform(-1, 1)
-        # y = np.random.uniform(-2, 2)
+    def hj_random_init(self, percent):
+        # stage 1
+        # x = np.random.uniform(-1, 1)
+        # y = np.random.uniform(-1, 1)
         # z = np.random.uniform(2, 3)
+        # stage 2
+        # x = np.random.uniform(-4, 4)
+        # y = np.random.uniform(-4, 4)
+        # z = np.random.uniform(2, 4)
+        # x = np.random.uniform(-7, 7)
+        # y = np.random.uniform(-7, 7)
+        # z = np.random.uniform(2, 5)
+        # stage 3
+        x = np.random.uniform(-50, 50) * percent ** 0.5
+        y = np.random.uniform(-50, 50) * percent ** 0.5
+        z = 3 + np.random.uniform(0, 20) * percent ** 0.5
+        # x = np.random.uniform(-15, 15)
+        # y = np.random.uniform(-15, 15)
+        # z = np.random.uniform(2, 10)
+        # x = -50 + np.random.uniform(-1, 1)
+        # y = -50 + np.random.uniform(-2, 2)
+        # z = 20 + np.random.uniform(4, 5)
         initial_xyzs = np.vstack([[x, y, z]])
         return initial_xyzs
 
@@ -234,7 +249,7 @@ class BaseAviary(gym.Env):
         self.action_space = self._actionSpace()
         self.observation_space = self._observationSpace()
         #### Housekeeping ##########################################
-        self._housekeeping()
+        self._housekeeping(percent=0)
         #### Update and store the drones kinematic information #####
         self._updateAndStoreKinematicInformation()
         #### Start video recording #################################
@@ -242,7 +257,7 @@ class BaseAviary(gym.Env):
 
     ################################################################################
 
-    def reset(self,
+    def reset(self, percent,
               seed: int = None,
               options: dict = None):
         """Resets the environment.
@@ -269,7 +284,7 @@ class BaseAviary(gym.Env):
 
         pbl.resetSimulation(physicsClientId=self.CLIENT)
         #### Housekeeping ##########################################
-        self._housekeeping()
+        self._housekeeping(percent)
         #### Update and store the drones kinematic information #####
         self._updateAndStoreKinematicInformation()
         #### Start video recording #################################
@@ -533,7 +548,7 @@ class BaseAviary(gym.Env):
                                         baseVisualShapeIndex=cube_visual_shape,
                                         basePosition=[0, 0, 6.2])
 
-    def _housekeeping(self):
+    def _housekeeping(self, percent):
         """Housekeeping function.
 
         Allocation and zero-ing of the variables and PyBullet's parameters/objects
@@ -572,7 +587,7 @@ class BaseAviary(gym.Env):
         #### Load ground plane, drone and obstacles models #########
         self.PLANE_ID = pbl.loadURDF("plane.urdf", physicsClientId=self.CLIENT)
 
-        initial_xyzs = self.hj_random_init()
+        initial_xyzs = self.hj_random_init(percent)
         # print("initial_xyzs: ", initial_xyzs)
         self.INIT_XYZS = initial_xyzs
 

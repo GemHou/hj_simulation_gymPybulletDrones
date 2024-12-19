@@ -270,8 +270,8 @@ class MLPActorCritic(nn.Module):
         return self.step(obs)[0]
 
 
-def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret):
-    obs_ma, info = env.reset()
+def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent):
+    obs_ma, info = env.reset(percent)
     ep_ret, ep_len = 0, 0
     list_epoch_ep_ret = []
     list_epoch_ep_len = []
@@ -327,7 +327,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
             list_epoch_ep_len.append(ep_len)
             list_epoch_rps.append(ep_ret / ep_len)
             reset_time_start = time.time()
-            obs_ma, info = env.reset()
+            obs_ma, info = env.reset(percent)
             reset_time = time.time() - reset_time_start
             # wandb.log({"8 throughout/AverageResetTime": reset_time})
             list_epoch_reset_time.append(reset_time)
@@ -340,7 +340,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
 
 
 def compute_loss_pi_with_entropy(data, ac, clip_ratio,
-                                 ent_coeff=0.001):  # You can adjust the value of ent_coeff ent_coeff= 0.001~0.02~0.1
+                                 ent_coeff=0.000):  # You can adjust the value of ent_coeff ent_coeff= 0.001~0.02~0.1
     obs, act, adv, logp_old = data['obs'], data['act'], data['adv'], data['logp']
 
     # Policy loss
