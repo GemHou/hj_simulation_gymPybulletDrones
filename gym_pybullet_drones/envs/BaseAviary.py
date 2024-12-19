@@ -676,7 +676,7 @@ class BaseAviary(gym.Env):
         vel = self.vel[nth_drone, :]
         ang = self.ang_v[nth_drone, :]
         last_clipped_action = self.last_clipped_action[nth_drone, :]
-        state = np.hstack([pos, nth, rpy, vel, ang, last_clipped_action])
+        state = np.hstack([pos, nth, rpy, vel, ang, last_clipped_action])  # 3 4 3 3 3 4
         return state.reshape(20, )
 
     ################################################################################

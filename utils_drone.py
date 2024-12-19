@@ -104,3 +104,55 @@ class HjAviaryActionAng(HjAviary):
         # action_ma_motor = np.clip(action_ma_motor, a_min=-10, a_max=10)
         obs, reward, terminated, truncated, info = super().step(action_ma_motor)
         return obs, reward, terminated, truncated, info
+
+
+class HjAviaryActionAngRes(HjAviaryActionAng):
+    def step(self,
+             action_ma_ang
+             ):
+        goal_pos_z = 3
+        goal_pos_x = 0
+        goal_pos_y = 0
+
+
+        state = self._getDroneStateVector(0)
+        ang = state[13:16]
+        ang_my = ang[0]
+        ang_x = ang[1]
+        ang_z = ang[2]
+        pos = state[:3]
+        pos_x = pos[0]
+        pos_y = pos[1]
+        pos_z = pos[2]
+        vel = state[10:13]
+        vel_x = vel[0]
+        vel_y = vel[1]
+        vel_z = vel[2]
+
+        # goal_pos
+        # goal_pos_z
+        # wandb.log({"z/goal_pos_z": goal_pos_z})
+        # wandb.log({"x/goal_pos_x": goal_pos_x})
+        # wandb.log({"y/goal_pos_y": goal_pos_y})
+        # goal_vel
+        goal_vel_z = (goal_pos_z - pos_z) * 0.5
+        # goal_vel_x
+        goal_vel_x = (goal_pos_x - pos_x) * 0.2 - vel_x * 0.1
+        # goal_vel_y
+        goal_vel_y = (goal_pos_y - pos_y) * 0.2 - vel_y * 0.1
+        # wandb.log({"z/goal_vel_z": goal_vel_z})
+        # wandb.log({"x/goal_vel_x": goal_vel_x})
+        goal_vel_x = np.clip(goal_vel_x, -2, 2)
+        # wandb.log({"y/goal_vel_y": goal_vel_y})
+        goal_vel_y = np.clip(goal_vel_y, -2, 2)
+        # goal_ang
+        goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
+        goal_ang_x = np.clip(goal_ang_x, -0.05, 0.05)
+        goal_ang_my = (goal_vel_y - vel_y) * -0.02
+        goal_ang_my = np.clip(goal_ang_my, -0.05, 0.05)
+        # wandb.log({"x/goal_ang_x": goal_ang_x})
+        # wandb.log({"y/goal_ang_my": goal_ang_my})
+        action_ang_pid = [goal_ang_x, goal_ang_my, goal_vel_z]
+
+        obs, reward, terminated, truncated, info = super().step(action_ma_ang)
+        return obs, reward, terminated, truncated, info
