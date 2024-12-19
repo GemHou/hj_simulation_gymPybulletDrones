@@ -153,6 +153,12 @@ class HjAviaryActionAngRes(HjAviaryActionAng):
         # wandb.log({"x/goal_ang_x": goal_ang_x})
         # wandb.log({"y/goal_ang_my": goal_ang_my})
         action_ang_pid = [goal_ang_x, goal_ang_my, goal_vel_z]
+        action_ma_ang_pid = np.array([action_ang_pid])
+
+        # action_ma_ang[0, 0] = action_ma_ang[0, 0] + action_ang_pid[0]
+        # action_ma_ang[0, 1] = action_ma_ang[0, 1] + action_ang_pid[1]
+        # action_ma_ang[0, 2] = action_ma_ang[0, 2] + action_ang_pid[2]
+        action_ma_ang = action_ma_ang + action_ma_ang_pid
 
         obs, reward, terminated, truncated, info = super().step(action_ma_ang)
         return obs, reward, terminated, truncated, info
