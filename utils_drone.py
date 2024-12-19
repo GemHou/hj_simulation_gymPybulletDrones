@@ -1,6 +1,6 @@
 import math
-
 import numpy as np
+from gymnasium import spaces
 
 from gym_pybullet_drones.envs import HoverAviary
 
@@ -54,13 +54,27 @@ class HjAviary(HoverAviary):
 
 
 class HjAviaryActionAng(HjAviary):
+    # def _actionSpace(self):
+    #     """Returns the action space of the environment.
+    #
+    #     Returns
+    #     -------
+    #     spaces.Box
+    #         An ndarray of shape (NUM_DRONES, 4) for the commanded velocity vectors.
+    #
+    #     """
+    #     #### Action vector ######### X       Y       Z   fract. of MAX_SPEED_KMH
+    #     act_lower_bound = np.array([[-1,     -1,     -1] for i in range(self.NUM_DRONES)])
+    #     act_upper_bound = np.array([[ 1,      1,      1] for i in range(self.NUM_DRONES)])
+    #     return spaces.Box(low=act_lower_bound, high=act_upper_bound, dtype=np.float32)
+
     def step(self,
-             action_ma_ang
+             action_ma_ang_norm_rl
              ):
         # analyse action
-        goal_ang_x = action_ma_ang[0, 0]
-        goal_ang_my = action_ma_ang[0, 1]
-        goal_vel_z = action_ma_ang[0, 2]
+        goal_ang_x = action_ma_ang_norm_rl[0, 0] / 20
+        goal_ang_my = action_ma_ang_norm_rl[0, 1] / 20
+        goal_vel_z = action_ma_ang_norm_rl[0, 2]
         goal_ang_z = 0  # -0.02 0 0.02
         # if goal_vel_z < 0:
         #     goal_vel_z = 0
@@ -101,19 +115,18 @@ class HjAviaryActionAng(HjAviary):
         #                     action_vel_z - action_ang_z,
         #                     action_vel_z + action_ang_z]
         action_ma_motor = np.array([action_motor])
-        # action_ma_motor = np.clip(action_ma_motor, a_min=-10, a_max=10)
+        action_ma_motor = np.clip(action_ma_motor, a_min=-10, a_max=10)
         obs, reward, terminated, truncated, info = super().step(action_ma_motor)
         return obs, reward, terminated, truncated, info
 
 
 class HjAviaryActionAngRes(HjAviaryActionAng):
     def step(self,
-             action_ma_ang
+             action_ma_ang_norm_rl
              ):
         goal_pos_z = 3
         goal_pos_x = 0
         goal_pos_y = 0
-
 
         state = self._getDroneStateVector(0)
         ang = state[13:16]
@@ -152,13 +165,13 @@ class HjAviaryActionAngRes(HjAviaryActionAng):
         goal_ang_my = np.clip(goal_ang_my, -0.05, 0.05)
         # wandb.log({"x/goal_ang_x": goal_ang_x})
         # wandb.log({"y/goal_ang_my": goal_ang_my})
-        action_ang_pid = [goal_ang_x, goal_ang_my, goal_vel_z]
-        action_ma_ang_pid = np.array([action_ang_pid])
+        action_ang_norm_pid = [goal_ang_x * 20, goal_ang_my * 20, goal_vel_z, 0]
+        action_ma_ang_pid_norm = np.array([action_ang_norm_pid])
 
         # action_ma_ang[0, 0] = action_ma_ang[0, 0] + action_ang_pid[0]
         # action_ma_ang[0, 1] = action_ma_ang[0, 1] + action_ang_pid[1]
         # action_ma_ang[0, 2] = action_ma_ang[0, 2] + action_ang_pid[2]
-        action_ma_ang = action_ma_ang + action_ma_ang_pid
+        action_ma_ang_norm = action_ma_ang_norm_rl + action_ma_ang_pid_norm
 
-        obs, reward, terminated, truncated, info = super().step(action_ma_ang)
+        obs, reward, terminated, truncated, info = super().step(action_ma_ang_norm)
         return obs, reward, terminated, truncated, info

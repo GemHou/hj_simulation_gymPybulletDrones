@@ -8,7 +8,7 @@ from utils_rl import MLPActorCritic
 from utils_drone import HjAviaryActionAngRes
 
 DEVICE = torch.device("cpu")
-CONTROL_MODE = "PID"  # PID RL
+CONTROL_MODE = "RL"  # PID RL
 PERCENT = 1
 
 
@@ -48,7 +48,7 @@ def main():
 
     if CONTROL_MODE == "RL":
         ac = MLPActorCritic(env.observation_space, env.action_space)
-        state_dict = torch.load("./data/interim/para_actionAng_temp.pt",
+        state_dict = torch.load("./data/interim/para_actionAngRes_temp.pt",
                                 map_location=torch.device(DEVICE))
         ac.load_state_dict(state_dict)
     else:
@@ -58,14 +58,14 @@ def main():
         obs_ma, info = env.reset(PERCENT)
         for j in range(1000):
             # if CONTROL_MODE == "RL":
-            #     ang_my, ang_x, pos_z, pos_x, pos_y, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
-            #     obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
-            #     action_ang, _, _ = ac.step(obs_tensor)
+            ang_my, ang_x, pos_z, pos_x, pos_y, vel_x, vel_y, vel_z = analyse_obs(obs_ma)
+            obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
+            action_ang, _, _ = ac.step(obs_tensor)
             # elif CONTROL_MODE == "PID":
             #     action_ang = generate_action_pid(obs_ma, goal_pos_z=3, goal_pos_x=0, goal_pos_y=0)  # , goal_vel_x=5, goal_vel_y=2.5
             # else:
             #     raise
-            action_ang = [0, 0, 0]
+            # action_ang = [0, 0, 0, 0]
             action_ma = np.array([action_ang])
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
