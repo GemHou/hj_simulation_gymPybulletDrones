@@ -2,6 +2,7 @@ import os
 from sys import platform
 import time
 import math
+import pybullet
 import collections
 from datetime import datetime
 import xml.etree.ElementTree as etxml
@@ -293,6 +294,23 @@ class BaseAviary(gym.Env):
         #### Return the initial observation ########################
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
+
+        self.target_x = np.random.uniform(-1, 1)
+        self.target_y = np.random.uniform(-1, 1)
+        self.target_z = np.random.uniform(2, 3)
+
+        # 创建一个视觉形状（球体）
+        sphere_visual_shape = pybullet.createVisualShape(shapeType=pybullet.GEOM_SPHERE,
+                                                  radius=0.1,
+                                                  rgbaColor=[1, 0, 0, 1])
+
+        # 创建一个刚体，仅使用视觉形状，不创建碰撞形状，质量设为 0
+        sphere_body = pybullet.createMultiBody(baseMass=0,
+                                        baseInertialFramePosition=[0, 0, 0],
+                                        baseVisualShapeIndex=sphere_visual_shape,
+                                        basePosition=[self.target_x, self.target_y, self.target_z],
+                                        baseCollisionShapeIndex=-1)
+
         return initial_obs, initial_info
 
     ################################################################################
