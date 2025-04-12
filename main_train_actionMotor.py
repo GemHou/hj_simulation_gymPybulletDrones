@@ -86,7 +86,6 @@ def print_hello_world(num, result_queue):
     result_queue.put(message)  # 将结果放入队列
 
 
-
 def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf, list_ep_ret,
               bs_start, bs_end, max_ep_len, clip_ratio, train_pi_iters, train_v_iters, target_kl):
     result_queue = multiprocessing.Queue()
@@ -107,7 +106,8 @@ def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, schedule
 
     data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters)
 
-    update_time_once = update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
+    update_time_once = update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer,
+                              target_kl)
     wandb.log({"8 throughout/TimeUpdateOnce": update_time_once})
 
     if not PERCENT_MODE:
