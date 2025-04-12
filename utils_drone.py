@@ -15,7 +15,7 @@ class HjAviary(HoverAviary):
         pos_z = pos[2]
         ang_v = state[13:16]
 
-        if pos_z < 1.1:
+        if pos_z < 1:
             reward_done = -10
         else:
             reward_done = 0
@@ -32,6 +32,8 @@ class HjAviary(HoverAviary):
 
         reward = reward_done + reward_target * 0.8 + reward_ang_v * 0.2  # + reward_z + reward_xy
 
+        reward = np.clip(reward, -1, 2)
+
         return reward
 
     def _computeTerminated(self):
@@ -45,7 +47,7 @@ class HjAviary(HoverAviary):
         target_y = self.target_y
         target_z = self.target_z
         dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
-        if pos_z < 2:
+        if pos_z < 1:
             done = True
         elif dis_target > 100:
             done = True

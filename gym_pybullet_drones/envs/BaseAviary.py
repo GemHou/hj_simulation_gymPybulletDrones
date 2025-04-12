@@ -31,7 +31,7 @@ class BaseAviary(gym.Env):
         # stage 1
         x = np.random.uniform(-10, 10)
         y = np.random.uniform(-10, 10)
-        z = np.random.uniform(1, 10)
+        z = np.random.uniform(0.5, 10)
         # stage 2
         # x = np.random.uniform(-4, 4)
         # y = np.random.uniform(-4, 4)
@@ -292,9 +292,9 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        self.target_x = np.random.uniform(-1, 1)
-        self.target_y = np.random.uniform(-1, 1)
-        self.target_z = np.random.uniform(2, 3)
+        self.target_x = np.random.uniform(-5, 5)
+        self.target_y = np.random.uniform(-5, 5)
+        self.target_z = np.random.uniform(2, 5)
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
 
