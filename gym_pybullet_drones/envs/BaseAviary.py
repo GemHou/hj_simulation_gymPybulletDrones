@@ -295,9 +295,9 @@ class BaseAviary(gym.Env):
         self.target_x = np.random.uniform(-5, 5)
         self.target_y = np.random.uniform(-5, 5)
         self.target_z = np.random.uniform(2, 5)
-        self.target_x_vel = np.random.uniform(-0.05, 0.05)
-        self.target_y_vel = np.random.uniform(-0.05, 0.05)
-        self.target_z_vel = np.random.uniform(-0.01, 0.02)
+        self.target_x_vel = np.random.uniform(-0.03, 0.03)
+        self.target_y_vel = np.random.uniform(-0.03, 0.03)
+        self.target_z_vel = np.random.uniform(-0.01, 0.01)
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
 
