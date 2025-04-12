@@ -9,15 +9,16 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_actionMotor_scaling1_bs10000_20250412"
-SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bs10000.pt"
+RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_20250412"
+SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000.pt"
 EPOCH = 200  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
 
 
 def main():
-    local_steps_per_epoch = 10000  # 2000 3000  batch size bs
+    bs_start = 2000
+    bs_end = 20000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
@@ -43,8 +44,6 @@ def main():
     obs_dim = env.observation_space.shape[1]
     act_dim = env.action_space.shape[1]
 
-    replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=local_steps_per_epoch)  # size=int(1e6)
-
     ac = MLPActorCritic(env.observation_space, env.action_space)  # , hidden_sizes=(64, 128, 128)
 
     if LOAD_FROM is not None:
@@ -65,6 +64,9 @@ def main():
     list_ep_ret = []
 
     for epoch in tqdm.tqdm(range(EPOCH)):
+        local_steps_per_epoch = int((bs_end - bs_start) * epoch / EPOCH + bs_start)
+        replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=local_steps_per_epoch)  # size=int(1e6)
+
         wandb.log({"7_1 spup increase/Epoch": (epoch + 1)})
         time_start_collect_experience_once = time.time()
         if PERCENT_MODE:
@@ -77,7 +79,7 @@ def main():
         wandb.log({"7_1 spup increase/TotalEnvInteracts": (epoch + 1) * local_steps_per_epoch})
         life_long_time = time.time() - life_long_time_start
         wandb.log({"7_1 spup increase/Time": life_long_time})
-        wandb.log({"8 throughout/LifeLongEnvRate": (epoch + 1) * local_steps_per_epoch / life_long_time})
+        # wandb.log({"8 throughout/LifeLongEnvRate": (epoch + 1) * local_steps_per_epoch / life_long_time})
         wandb.log({"8 throughout/LifeLongUpdateRate": (epoch + 1) * train_pi_iters / life_long_time})
 
         data = replay_buffer.get(device=DEVICE)
