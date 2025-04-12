@@ -292,12 +292,11 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        initial_obs = self._computeObs()
-        initial_info = self._computeInfo()
-
         self.target_x = np.random.uniform(-1, 1)
         self.target_y = np.random.uniform(-1, 1)
         self.target_z = np.random.uniform(2, 3)
+        initial_obs = self._computeObs()
+        initial_info = self._computeInfo()
 
         # 创建一个视觉形状（球体）
         sphere_visual_shape = pybullet.createVisualShape(shapeType=pybullet.GEOM_SPHERE,
