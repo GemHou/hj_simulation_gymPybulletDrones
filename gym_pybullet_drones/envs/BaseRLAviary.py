@@ -305,8 +305,8 @@ class BaseRLAviary(BaseAviary):
             #### Observation vector ### X        Y        Z       Q1   Q2   Q3   Q4   R       P       Y       VX       VY       VZ       WX       WY       WZ
             lo = -np.inf
             hi = np.inf
-            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)])
-            obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)])
+            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)])
+            obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)])
             #### Add action buffer to observation space ################
             act_lo = -1
             act_hi = +1
@@ -353,12 +353,19 @@ class BaseRLAviary(BaseAviary):
         elif self.OBS_TYPE == ObservationType.KIN:
             ############################################################
             #### OBS SPACE OF SIZE 12
-            obs_15 = np.zeros((self.NUM_DRONES,15))
+            obs_21 = np.zeros((self.NUM_DRONES,21))
             for i in range(self.NUM_DRONES):
                 #obs = self._clipAndNormalizeState(self._getDroneStateVector(i))
                 obs = self._getDroneStateVector(i)  # [pos 3, nth 4, rpy 3, vel 3, ang 3, last_clipped_action 4]
-                obs_15[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16], [self.target_x, self.target_y, self.target_z]]).reshape(15,)  # [pos 3, rpy 3, vel 3, ang 3]
-            ret = np.array([obs_15[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
+                obs_21[i, :] = np.hstack([obs[0:3],
+                                          obs[7:10],
+                                          obs[10:13],
+                                          obs[13:16],
+                                          [self.target_x, self.target_y, self.target_z],
+                                          [self.target_x-obs[0], self.target_y-obs[1], self.target_z-obs[2]],
+                                          [self.target_x_vel, self.target_y_vel, self.target_z_vel],
+                                          ]).reshape(21,)  # [pos 3, rpy 3, vel 3, ang 3]
+            ret = np.array([obs_21[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):
                 ret = np.hstack([ret, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])
