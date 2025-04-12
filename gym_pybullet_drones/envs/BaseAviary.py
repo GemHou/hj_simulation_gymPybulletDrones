@@ -16,7 +16,7 @@ import pybullet_data
 import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
-SCENARIO = "None"  # "None" "Farm" "Arch"
+SCENARIO = "Arch"  # "None" "Farm" "Arch"
 GLOBAL_SCALING = 1
 
 
@@ -292,9 +292,9 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        self.target_x = np.random.uniform(-5, 5)
-        self.target_y = np.random.uniform(-5, 5)
-        self.target_z = np.random.uniform(2, 5)
+        self.target_x = np.random.uniform(-10, 10)
+        self.target_y = np.random.uniform(-10, 10)
+        self.target_z = np.random.uniform(1, 4)
         self.target_x_vel = np.random.uniform(-0.03, 0.03)
         self.target_y_vel = np.random.uniform(-0.03, 0.03)
         self.target_z_vel = np.random.uniform(-0.01, 0.01)

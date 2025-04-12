@@ -129,7 +129,8 @@ class BaseRLAviary(BaseAviary):
         else:
             if SCENARIO == "Arch":
                 p.loadURDF("samurai.urdf",
-                           physicsClientId=self.CLIENT
+                           physicsClientId=self.CLIENT,
+                           globalScaling=0.25
                            )
             # p.loadURDF("block.urdf",
             #            [1, 0, .1],
