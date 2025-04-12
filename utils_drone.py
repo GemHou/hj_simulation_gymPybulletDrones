@@ -17,12 +17,13 @@ class HjAviary(HoverAviary):
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
+        ang_v = state[13:16]
+
         if pos_z < 1.1:
             reward_done = -10
         else:
             reward_done = 0
-        # reward_z = pos_z
-        # reward_xy = - abs(pos_x) - abs(pos_y)
+
         target_x = TARGET_X
         target_y = TARGET_Y
         target_z = TARGET_Z
@@ -30,7 +31,11 @@ class HjAviary(HoverAviary):
         reward_target = 1 / (dis_target / 5 + 1)
         # reward_target = 5 - (abs(pos_x - target_x) + abs(pos_y - target_y) + abs(pos_z - target_z))
         # reward_target = min(reward_target, 10)
-        reward = reward_done + reward_target  # + reward_z + reward_xy
+
+        reward_ang_v = 1 / (abs(ang_v[2]) / 1 + 1)
+
+        reward = reward_done + reward_target * 0.8 + reward_ang_v * 0.2  # + reward_z + reward_xy
+
         return reward
 
     def _computeTerminated(self):
@@ -43,7 +48,7 @@ class HjAviary(HoverAviary):
         target_y = TARGET_Y
         target_z = TARGET_Z
         dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
-        if pos_z < 2:
+        if pos_z < 0.5:
             done = True
         elif dis_target > 100:
             done = True
