@@ -374,6 +374,7 @@ def compute_loss_v(data, ac):
 
 
 def update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl):
+    start_time = time.time()
     pi_l_old, pi_info_old = compute_loss_pi_with_entropy(data, ac, clip_ratio)  #
     pi_l_old = pi_l_old.item()
     v_l_old = compute_loss_v(data, ac).item()
@@ -407,3 +408,5 @@ def update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf
     wandb.log({"7 spup/kl": kl})
     wandb.log({"7 spup/ent": ent})
     wandb.log({"7 spup/cf": cf})
+    update_time = time.time()-start_time
+    return update_time

@@ -9,8 +9,8 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV3_20250412"
-SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV3.pt"
+RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV4_20250412"
+SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV4.pt"
 EPOCH = 300  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
@@ -75,6 +75,7 @@ def main():
             percent = 1
         collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent)
         time_collect_experience_once = time.time() - time_start_collect_experience_once
+        wandb.log({"8 throughout/TimeCollectExperienceOnce": time_collect_experience_once})
         wandb.log({"8 throughout/EnvRateWithReset": local_steps_per_epoch / time_collect_experience_once})
         wandb.log({"7_1 spup increase/TotalEnvInteracts": (epoch + 1) * local_steps_per_epoch})
         life_long_time = time.time() - life_long_time_start
@@ -84,7 +85,8 @@ def main():
 
         data = replay_buffer.get(device=DEVICE)
 
-        update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
+        update_time_once = update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
+        wandb.log({"8 throughout/TimeUpdateOnce": update_time_once})
 
         if not PERCENT_MODE:
             # 调整学习率
