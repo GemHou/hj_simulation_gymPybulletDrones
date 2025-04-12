@@ -11,8 +11,8 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV14_20250412"
-SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV14.pt"
+RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV16_20250412"
+SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV16.pt"
 EPOCH = 300  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
