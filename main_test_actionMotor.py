@@ -12,7 +12,7 @@ DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # PID RL
 PERCENT = 0.1
 MAX_EP_LEN = 500
-LOAD_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV.pt"  # _041212
+LOAD_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV3.pt"  # _041212
 
 
 def analyse_obs(obs_ma):

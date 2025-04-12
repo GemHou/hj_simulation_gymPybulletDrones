@@ -48,7 +48,7 @@ class HjAviary(HoverAviary):
         target_y = TARGET_Y
         target_z = TARGET_Z
         dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
-        if pos_z < 0.5:
+        if pos_z < 2:
             done = True
         elif dis_target > 100:
             done = True
