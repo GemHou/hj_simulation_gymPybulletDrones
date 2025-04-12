@@ -16,6 +16,7 @@ import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
 SCENARIO = "None"  # "None" "Farm" "Arch"
+GLOBAL_SCALING = 1
 
 
 class BaseAviary(gym.Env):
@@ -597,7 +598,7 @@ class BaseAviary(gym.Env):
                           pbl.getQuaternionFromEuler(self.INIT_RPYS[i, :]),
                           flags=pbl.URDF_USE_INERTIA_FROM_FILE,
                           physicsClientId=self.CLIENT,
-                          globalScaling=15,
+                          globalScaling=GLOBAL_SCALING,
                           ) for i in range(self.NUM_DRONES)])
         #### Remove default damping #################################
         # for i in range(self.NUM_DRONES):

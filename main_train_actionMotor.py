@@ -9,14 +9,15 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X-actionMotor-stage1-h4-20250412"
-EPOCH = 5000  # 1000 5000 2000
+RESUME_NAME = "5900X_actionMotor_scaling1_bs10000_20250412"
+SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bs10000.pt"
+EPOCH = 200  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
 
 
 def main():
-    local_steps_per_epoch = 2000  # 2000 3000
+    local_steps_per_epoch = 10000  # 2000 3000  batch size bs
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
@@ -88,7 +89,7 @@ def main():
             scheduler_pi.step()
             scheduler_vf.step()
 
-        torch.save(ac.state_dict(), "./data/interim/para_actionMotor_temp.pt")
+        torch.save(ac.state_dict(), SAVE_PATH)
 
     print("Finished...")
 
