@@ -295,6 +295,9 @@ class BaseAviary(gym.Env):
         self.target_x = np.random.uniform(-5, 5)
         self.target_y = np.random.uniform(-5, 5)
         self.target_z = np.random.uniform(2, 5)
+        self.target_x_vel = np.random.uniform(-0.05, 0.05)
+        self.target_y_vel = np.random.uniform(-0.05, 0.05)
+        self.target_z_vel = np.random.uniform(-0.01, 0.02)
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
 
@@ -304,7 +307,7 @@ class BaseAviary(gym.Env):
                                                   rgbaColor=[1, 0, 0, 1])
 
         # 创建一个刚体，仅使用视觉形状，不创建碰撞形状，质量设为 0
-        sphere_body = pybullet.createMultiBody(baseMass=0,
+        self.target_sphere = pybullet.createMultiBody(baseMass=0,
                                         baseInertialFramePosition=[0, 0, 0],
                                         baseVisualShapeIndex=sphere_visual_shape,
                                         basePosition=[self.target_x, self.target_y, self.target_z],
@@ -441,6 +444,12 @@ class BaseAviary(gym.Env):
         info = self._computeInfo()
         #### Advance the step counter ##############################
         self.step_counter = self.step_counter + (1 * self.PYB_STEPS_PER_CTRL)
+
+        self.target_x += self.target_x_vel
+        self.target_y += self.target_y_vel
+        self.target_z += self.target_z_vel
+        pybullet.resetBasePositionAndOrientation(self.target_sphere, [self.target_x, self.target_y, self.target_z], [0, 0, 0, 1])
+
         return obs, reward, terminated, truncated, info
 
     ################################################################################
