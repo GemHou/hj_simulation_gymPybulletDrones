@@ -11,6 +11,8 @@ from utils_drone import HjAviary
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # PID RL
 PERCENT = 0.1
+MAX_EP_LEN = 500
+LOAD_PATH = "./data/interim/para_actionMotor_temp.pt"  # _041212
 
 
 def analyse_obs(obs_ma):
@@ -85,12 +87,12 @@ def main():
     ac = MLPActorCritic(env.observation_space, env.action_space)  # , hidden_sizes=(128, 128, 128)
 
     for i in range(100):
-        state_dict = torch.load("./data/interim/para_actionMotor_temp.pt",
+        state_dict = torch.load(LOAD_PATH,
                                 map_location=torch.device(DEVICE))
         ac.load_state_dict(state_dict)
 
         obs_ma, info = env.reset(PERCENT)
-        for j in range(500):
+        for j in range(MAX_EP_LEN):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
                 action, _, _ = ac.step(obs_tensor)
