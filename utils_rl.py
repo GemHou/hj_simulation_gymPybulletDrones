@@ -284,17 +284,6 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
         action_ma = np.array([action])
         next_obs_ma, reward, done, truncated, info = env.step(action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
 
-        # obs_12 = next_obs_ma[:, :12]  # [1, 12]  # [pos 3, rpy 3, vel 3, ang 3]
-        # pos = obs_12[:, 0:3]
-        # rpy = obs_12[:, 3:6]
-        # vel = obs_12[:, 6:9]
-        # ang = obs_12[:, 9:12]
-        # reward = pos[0, 2]
-        #
-        # if reward < 0.05:
-        #     done = True
-        #     reward = -10
-
         ep_len += 1
         ep_ret += reward
 
@@ -318,18 +307,13 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
             else:  # done
                 v = 0
             replay_buffer.finish_path(v)
-            # print("ep_ret: ", ep_ret)
             list_ep_ret.append(ep_ret)
-            # wandb.log({"5 performance/episode return": ep_ret})
-            # wandb.log({"5 performance/episode length": ep_len})
-            # wandb.log({"5 performance/return per step": ep_ret/ep_len})
             list_epoch_ep_ret.append(ep_ret)
             list_epoch_ep_len.append(ep_len)
             list_epoch_rps.append(ep_ret / ep_len)
             reset_time_start = time.time()
             obs_ma, info = env.reset(percent)
             reset_time = time.time() - reset_time_start
-            # wandb.log({"8 throughout/AverageResetTime": reset_time})
             list_epoch_reset_time.append(reset_time)
             ep_ret, ep_len = 0, 0
     print("np.mean(list_epoch_ep_ret): ", np.mean(list_epoch_ep_ret))
