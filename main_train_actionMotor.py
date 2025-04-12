@@ -2,6 +2,7 @@ import time
 import tqdm
 import wandb
 import torch
+import numpy as np
 import multiprocessing
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -10,8 +11,8 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV5_20250412"
-SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV5.pt"
+RESUME_NAME = "5900X_actionMotor_scaling1_bsS2000E20000_init10_rewardV14_20250412"
+SAVE_PATH = "./data/interim/para_actionMotor_scaling1_bsS2000E20000_init10_rewardV14.pt"
 EPOCH = 300  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
@@ -55,7 +56,7 @@ def setup_optimizers_and_schedulers(ac, pi_lr, vf_lr):
     return pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf
 
 
-def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters):
+def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, tensor_flag=True):
     local_steps_per_epoch = int((bs_end - bs_start) * epoch / EPOCH + bs_start)
     obs_dim = env.observation_space.shape[1]
     act_dim = env.action_space.shape[1]
@@ -75,36 +76,51 @@ def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, trai
     wandb.log({"7_1 spup increase/Time": life_long_time})
     # wandb.log({"8 throughout/LifeLongEnvRate": (epoch + 1) * local_steps_per_epoch / life_long_time})
     wandb.log({"8 throughout/LifeLongUpdateRate": (epoch + 1) * train_pi_iters / life_long_time})
-    data = replay_buffer.get(device=DEVICE)
+    data = replay_buffer.get(device=DEVICE, tensor_flag=tensor_flag)
     return data
 
 
-def print_hello_world(num, result_queue):
-    message = f"hello world {num}"
+def worker(num, epoch_queue, data_queue, ac, bs_end, bs_start, env, list_ep_ret, max_ep_len, train_pi_iters):
+    while True:
+        epoch = epoch_queue.get()
+        try:
+            state_dict = torch.load(SAVE_PATH, map_location=torch.device(DEVICE))
+            ac.load_state_dict(state_dict)
+        except Exception:
+            print("load fail!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            pass
+        data = collect_data(ac, bs_end / 4, bs_start / 4, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, tensor_flag=False)
+        data_queue.put(data)  # 将结果放入队列
 
-    print(message)
-    result_queue.put(message)  # 将结果放入队列
 
+def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
+              clip_ratio, train_pi_iters, train_v_iters, target_kl, epoch_queue,
+              data_queue, bs_end, bs_start, env, list_ep_ret, max_ep_len):
+    start_time = time.time()
+    if True:
+        data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters)
+    else:
+        for i in range(4):
+            epoch_queue.put(epoch)
 
-def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf, list_ep_ret,
-              bs_start, bs_end, max_ep_len, clip_ratio, train_pi_iters, train_v_iters, target_kl):
-    result_queue = multiprocessing.Queue()
-    processes = []
-    for i in range(1, 5):
-        p = multiprocessing.Process(target=print_hello_world, args=(i, result_queue))
-        processes.append(p)
-        p.start()
+        datas = []
+        for i in range(4):
+            temp_dict = data_queue.get()
+            datas.append(temp_dict)
 
-    for p in processes:
-        p.join()
-
-    results = []
-    while not result_queue.empty():
-        results.append(result_queue.get())
-
-    print("从子进程获取的结果:", results)
-
-    data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters)
+        data = dict()
+        data["obs"] = torch.from_numpy(
+            np.concatenate((datas[0]["obs"], datas[1]["obs"], datas[2]["obs"], datas[3]["obs"]), axis=0)).float()
+        data["act"] = torch.from_numpy(
+            np.concatenate((datas[0]["act"], datas[1]["act"], datas[2]["act"], datas[3]["act"]), axis=0)).float()
+        data["ret"] = torch.from_numpy(
+            np.concatenate((datas[0]["ret"], datas[1]["ret"], datas[2]["ret"], datas[3]["ret"]), axis=0)).float()
+        data["adv"] = torch.from_numpy(
+            np.concatenate((datas[0]["adv"], datas[1]["adv"], datas[2]["adv"], datas[3]["adv"]), axis=0)).float()
+        data["logp"] = torch.from_numpy(
+            np.concatenate((datas[0]["logp"], datas[1]["logp"], datas[2]["logp"], datas[3]["logp"]), axis=0)).float()
+    time_collect_data_out = time.time() - start_time
+    wandb.log({"8 throughout/TimeCollectExperienceOnceOut": time_collect_data_out})
 
     update_time_once = update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer,
                               target_kl)
@@ -139,9 +155,23 @@ def main():
 
     list_ep_ret = []
 
+    if False:
+        epoch_queue = multiprocessing.Queue()
+        data_queue = multiprocessing.Queue()
+        processes = []
+        for i in range(1, 5):
+            p = multiprocessing.Process(target=worker, args=(
+                i, epoch_queue, data_queue, ac, bs_end, bs_start, env, list_ep_ret, max_ep_len, train_pi_iters))
+            processes.append(p)
+            p.start()
+    else:
+        epoch_queue = None
+        data_queue = None
+
     for epoch in tqdm.tqdm(range(EPOCH)):
-        run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf, list_ep_ret,
-                  bs_start, bs_end, max_ep_len, clip_ratio, train_pi_iters, train_v_iters, target_kl)
+        run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
+                  clip_ratio, train_pi_iters, train_v_iters, target_kl, epoch_queue,
+                  data_queue, bs_end, bs_start, env, list_ep_ret, max_ep_len)
 
     print("Finished...")
 

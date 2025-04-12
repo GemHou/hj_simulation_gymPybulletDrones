@@ -107,7 +107,7 @@ class PPOBuffer:
 
         self.path_start_idx = self.ptr
 
-    def get(self, device):
+    def get(self, device, tensor_flag=True):
         """
         Call this at the end of an epoch to get all of the data from
         the buffer, with advantages appropriately normalized (shifted to have
@@ -132,19 +132,32 @@ class PPOBuffer:
         data = dict(obs=self.obs_buf, act=self.act_buf, ret=self.ret_buf,
                     adv=self.adv_buf, logp=self.logp_buf)
         if False:
-            return {k: torch.as_tensor(v, dtype=torch.float32, device=device) for k, v in data.items()}
+            if tensor_flag:
+                return {k: torch.as_tensor(v, dtype=torch.float32, device=device) for k, v in data.items()}
+            else:
+                return {k: v for k, v in data.items()}
         else:
             result = {}
             for k, v in data.items():
                 if isinstance(v, dict):
                     result[k] = dict()
-                    result[k]["real_ego"] = torch.as_tensor(v["real_ego"], dtype=torch.float32, device=device)
-                    result[k]["real_critic"] = torch.as_tensor(v["real_critic"], dtype=torch.float32, device=device)
-                    result[k]["real_static"] = torch.as_tensor(v["real_static"], dtype=torch.float32, device=device)
-                    result[k]["real_other"] = torch.as_tensor(v["real_other"], dtype=torch.float32, device=device)
+                    if tensor_flag:
+                        result[k]["real_ego"] = torch.as_tensor(v["real_ego"], dtype=torch.float32, device=device)
+                        result[k]["real_critic"] = torch.as_tensor(v["real_critic"], dtype=torch.float32, device=device)
+                        result[k]["real_static"] = torch.as_tensor(v["real_static"], dtype=torch.float32, device=device)
+                        result[k]["real_other"] = torch.as_tensor(v["real_other"], dtype=torch.float32, device=device)
+                    else:
+                        result[k]["real_ego"] = v["real_ego"]
+                        result[k]["real_critic"] = v["real_critic"]
+                        result[k]["real_static"] = v["real_static"]
+                        result[k]["real_other"] = v["real_other"]
+
                 else:
-                    tensor = torch.as_tensor(v, dtype=torch.float32, device=device)
-                    result[k] = tensor
+                    if tensor_flag:
+                        tensor = torch.as_tensor(v, dtype=torch.float32, device=device)
+                        result[k] = tensor
+                    else:
+                        result[k] = v
 
             return result
 
