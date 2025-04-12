@@ -2,6 +2,7 @@ import time
 import tqdm
 import wandb
 import torch
+import multiprocessing
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
@@ -54,13 +55,11 @@ def setup_optimizers_and_schedulers(ac, pi_lr, vf_lr):
     return pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf
 
 
-def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf, list_ep_ret,
-              bs_start, bs_end, max_ep_len, clip_ratio, train_pi_iters, train_v_iters, target_kl):
+def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters):
     local_steps_per_epoch = int((bs_end - bs_start) * epoch / EPOCH + bs_start)
     obs_dim = env.observation_space.shape[1]
     act_dim = env.action_space.shape[1]
     replay_buffer = PPOBuffer(obs_dim=obs_dim, act_dim=act_dim, size=local_steps_per_epoch)  # size=int(1e6)
-
     wandb.log({"7_1 spup increase/Epoch": (epoch + 1)})
     time_start_collect_experience_once = time.time()
     if PERCENT_MODE:
@@ -76,8 +75,37 @@ def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, schedule
     wandb.log({"7_1 spup increase/Time": life_long_time})
     # wandb.log({"8 throughout/LifeLongEnvRate": (epoch + 1) * local_steps_per_epoch / life_long_time})
     wandb.log({"8 throughout/LifeLongUpdateRate": (epoch + 1) * train_pi_iters / life_long_time})
-
     data = replay_buffer.get(device=DEVICE)
+    return data
+
+
+def print_hello_world(num, result_queue):
+    message = f"hello world {num}"
+
+    print(message)
+    result_queue.put(message)  # 将结果放入队列
+
+
+
+def run_epoch(epoch, ac, env, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf, list_ep_ret,
+              bs_start, bs_end, max_ep_len, clip_ratio, train_pi_iters, train_v_iters, target_kl):
+    result_queue = multiprocessing.Queue()
+    processes = []
+    for i in range(1, 5):
+        p = multiprocessing.Process(target=print_hello_world, args=(i, result_queue))
+        processes.append(p)
+        p.start()
+
+    for p in processes:
+        p.join()
+
+    results = []
+    while not result_queue.empty():
+        results.append(result_queue.get())
+
+    print("从子进程获取的结果:", results)
+
+    data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters)
 
     update_time_once = update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf_optimizer, target_kl)
     wandb.log({"8 throughout/TimeUpdateOnce": update_time_once})
