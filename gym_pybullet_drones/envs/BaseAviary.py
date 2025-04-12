@@ -28,9 +28,9 @@ class BaseAviary(gym.Env):
 
     def hj_random_init(self, percent):
         # stage 1
-        x = np.random.uniform(-1, 1)
-        y = np.random.uniform(-1, 1)
-        z = np.random.uniform(2, 3)
+        x = np.random.uniform(-10, 10)
+        y = np.random.uniform(-10, 10)
+        z = np.random.uniform(1, 10)
         # stage 2
         # x = np.random.uniform(-4, 4)
         # y = np.random.uniform(-4, 4)
