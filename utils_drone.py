@@ -45,7 +45,7 @@ class HjAviary(HoverAviary):
 
         reward_ang_v = 1 / (abs(ang_v[2]) / 1 + 1)
 
-        reward = reward_done + reward_target * 0.8 + reward_ang_v * 0.2  # + reward_z + reward_xy
+        reward = reward_done + reward_target * 0.7 + reward_ang_v * 0.3  # + reward_z + reward_xy
 
         reward = np.clip(reward, -1, 2)
 
