@@ -39,13 +39,13 @@ class HjAviary(HoverAviary):
         target_y = self.target_y
         target_z = self.target_z
         dis_target = math.sqrt((pos_x - target_x)**2 + (pos_y - target_y)**2 + (pos_z - target_z)**2)
-        reward_target = 1 / (dis_target / 5 + 1)
+        reward_target = 1 / (dis_target / 1 + 1)
         # reward_target = 5 - (abs(pos_x - target_x) + abs(pos_y - target_y) + abs(pos_z - target_z))
         # reward_target = min(reward_target, 10)
 
-        reward_ang_v = 1 / (abs(ang_v[2]) / 1 + 1)
+        reward_ang_v = np.clip(1 / (abs(ang_v[2]) / 1 + 1), 0, 1)
 
-        reward = reward_done + reward_target * 0.9 + reward_ang_v * 0.1  # + reward_z + reward_xy
+        reward = reward_done + reward_target * 0.7 + reward_ang_v * 0.3  # + reward_z + reward_xy
 
         reward = np.clip(reward, -1, 2)
 
