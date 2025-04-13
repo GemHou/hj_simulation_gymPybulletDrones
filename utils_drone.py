@@ -7,11 +7,11 @@ from gym_pybullet_drones.envs import HoverAviary
 
 class HjAviary(HoverAviary):
     def calc_done(self, dis_target, pitch, pos_z, roll):
-        if pos_z < 1:
+        if pos_z < 0.2:
             done = True
-        elif dis_target > 10:
+        elif dis_target > 20 * 1.732:
             done = True
-        elif abs(roll) > 60 or abs(pitch) > 60:
+        elif abs(roll) > 30 or abs(pitch) > 30:
             done = True
         else:
             done = False

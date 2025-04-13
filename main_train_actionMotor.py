@@ -12,9 +12,9 @@ from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE_MAIN = torch.device("cpu")  # "cuda:0" "cpu"
 DEVICE_WORKER = torch.device("cpu")  # "cuda:0" "cpu"
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_35_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_35.pt"
-EPOCH = 2000  # 200 1000 5000 2000
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_38_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_38.pt"
+EPOCH = 500  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = True  # True False
 
