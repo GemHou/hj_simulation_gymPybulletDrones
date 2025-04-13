@@ -29,9 +29,9 @@ class BaseAviary(gym.Env):
 
     def hj_random_init(self, percent):
         # stage 1
-        x = np.random.uniform(-10, 10)
-        y = np.random.uniform(-10, 10)
-        z = np.random.uniform(0.5, 10)
+        x = np.random.uniform(-10, 10) * percent ** 0.5
+        y = np.random.uniform(-10, 10) * percent ** 0.5
+        z = 1 + (np.random.uniform(-0.5, 0) + np.random.uniform(0, 10)) * percent ** 0.5
         # stage 2
         # x = np.random.uniform(-4, 4)
         # y = np.random.uniform(-4, 4)
@@ -303,12 +303,12 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        self.target_x = np.random.uniform(-10, 10)
-        self.target_y = np.random.uniform(-10, 10)
-        self.target_z = np.random.uniform(1, 4)
-        self.target_x_vel = np.random.uniform(-0.03, 0.03)
-        self.target_y_vel = np.random.uniform(-0.03, 0.03)
-        self.target_z_vel = np.random.uniform(-0.01, 0.01)
+        self.target_x = np.random.uniform(-10, 10) * percent
+        self.target_y = np.random.uniform(-10, 10) * percent
+        self.target_z = 2.5 + np.random.uniform(-1.5, 1.5) * percent
+        self.target_x_vel = np.random.uniform(-0.03, 0.03) * percent
+        self.target_y_vel = np.random.uniform(-0.03, 0.03) * percent
+        self.target_z_vel = np.random.uniform(-0.01, 0.01) * percent
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
 
@@ -650,7 +650,7 @@ class BaseAviary(gym.Env):
         # for i in range(self.NUM_DRONES):
         # p.setCollisionFilterPair(bodyUniqueIdA=self.PLANE_ID, bodyUniqueIdB=self.DRONE_IDS[i], linkIndexA=-1, linkIndexB=-1, enableCollision=0, physicsClientId=self.CLIENT)
         if self.OBSTACLES:
-            self._addObstacles()
+            self._addObstacles(percent=percent)
 
     ################################################################################
 

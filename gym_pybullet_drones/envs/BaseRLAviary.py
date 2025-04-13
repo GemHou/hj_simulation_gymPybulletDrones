@@ -100,7 +100,7 @@ class BaseRLAviary(BaseAviary):
 
     ################################################################################
 
-    def _addObstacles(self):
+    def _addObstacles(self, percent=0):
         """Add obstacles to the environment.
 
         Only if the observation is of type RGB, 4 landmarks are added.
@@ -130,7 +130,8 @@ class BaseRLAviary(BaseAviary):
                        )
         else:
             if SCENARIO == "Arch":
-                if random.random() < 1:  # 0.1 1
+                sce_prob = np.clip(percent * 2 - 0.5, 0, 1)
+                if random.random() < sce_prob:  # 0.1 1
                     p.loadURDF("samurai.urdf",
                                physicsClientId=self.CLIENT,
                                globalScaling=0.25

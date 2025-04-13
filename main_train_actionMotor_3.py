@@ -12,17 +12,17 @@ from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE_MAIN = torch.device("cuda:0")  # "cuda:0" "cpu"
 DEVICE_WORKER = torch.device("cpu")  # "cuda:0" "cpu"
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_10_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_10.pt"
-EPOCH = 1500  # 200 1000 5000 2000
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_12_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_12.pt"
+EPOCH = 1000  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
-PERCENT_MODE = False  # True False
+PERCENT_MODE = True  # True False
 
 
 def setup_wandb():
     wandb.init(
         # mode="offline",
-        project="project-drone-20241115",
+        project="project-drone-20250413",
         resume=RESUME_NAME  # HjScenarioEnv
     )
 
@@ -135,7 +135,7 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
 
 def main():
     bs_start = 2000
-    bs_end = 50000
+    bs_end = 20000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
