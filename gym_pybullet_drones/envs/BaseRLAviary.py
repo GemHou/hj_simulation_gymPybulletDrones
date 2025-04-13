@@ -130,7 +130,7 @@ class BaseRLAviary(BaseAviary):
                        )
         else:
             if SCENARIO == "Arch":
-                if random.random() < 1:  # 0.1 1
+                if random.random() < 0.1:  # 0.1 1
                     p.loadURDF("samurai.urdf",
                                physicsClientId=self.CLIENT,
                                globalScaling=0.25

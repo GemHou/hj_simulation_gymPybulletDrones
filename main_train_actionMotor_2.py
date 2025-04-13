@@ -11,9 +11,9 @@ from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_4_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_4.pt"
-EPOCH = 2000  # 200 1000 5000 2000
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_6_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_6.pt"
+EPOCH = 1500  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = False  # True False
 
@@ -133,7 +133,7 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
 
 def main():
     bs_start = 2000
-    bs_end = 100000
+    bs_end = 50000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
