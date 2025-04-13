@@ -67,7 +67,7 @@ def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, trai
         percent = epoch / EPOCH
     else:
         percent = 1
-    collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent)
+    collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent, DEVICE)
     time_collect_experience_once = time.time() - time_start_collect_experience_once
     wandb.log({"8 throughout/TimeCollectExperienceOnce": time_collect_experience_once})
     wandb.log({"8 throughout/EnvRateWithReset": local_steps_per_epoch / time_collect_experience_once})

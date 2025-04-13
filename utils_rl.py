@@ -71,7 +71,7 @@ class PPOBuffer:
             self.obs_buf["real_static"][self.ptr] = obs["real_static"]
             self.obs_buf["real_other"][self.ptr] = obs["real_other"]
         else:
-            self.obs_buf[self.ptr] = obs
+            self.obs_buf[self.ptr] = obs.cpu()
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
         self.val_buf[self.ptr] = val
@@ -283,7 +283,7 @@ class MLPActorCritic(nn.Module):
         return self.step(obs)[0]
 
 
-def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent):
+def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent, device):
     obs_ma, info = env.reset(percent)
     ep_ret, ep_len = 0, 0
     list_epoch_ep_ret = []
@@ -291,7 +291,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
     list_epoch_rps = []
     list_epoch_reset_time = []
     for t in range(local_steps_per_epoch):
-        obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
+        obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32, device=device)
         action, v, logp = ac.step(obs_tensor)
 
         action_ma = np.array([action])
@@ -315,7 +315,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
             if epoch_ended and not (terminal):
                 print('Warning: trajectory cut off by epoch at %d steps.' % ep_len, flush=True)
             if timeout or epoch_ended:
-                obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
+                obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32, device=device)
                 _, v, _ = ac.step(obs_tensor)
             else:  # done
                 v = 0
@@ -381,7 +381,7 @@ def update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf
     for i in range(train_pi_iters):
         pi_optimizer.zero_grad()
         loss_pi, pi_info = compute_loss_pi_with_entropy(data, ac, clip_ratio)  #
-        list_epoch_loss_pi.append(loss_pi.detach().numpy())
+        list_epoch_loss_pi.append(loss_pi.detach().cpu().numpy())
         # kl = mpi_avg(pi_info['kl'])
         kl = pi_info['kl']
         if kl > 1.5 * target_kl:
@@ -395,7 +395,7 @@ def update(data, ac, clip_ratio, train_pi_iters, train_v_iters, pi_optimizer, vf
         vf_optimizer.zero_grad()
         loss_v = compute_loss_v(data, ac)
         # wandb.log({"7 spup/LossV": loss_v})
-        list_epoch_loss_v.append(loss_v.detach().numpy())
+        list_epoch_loss_v.append(loss_v.detach().cpu().numpy())
         loss_v.backward()
         vf_optimizer.step()
     wandb.log({"7 spup/LossPi": np.mean(list_epoch_loss_pi)})
