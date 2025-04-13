@@ -9,9 +9,9 @@ class HjAviary(HoverAviary):
     def calc_done(self, dis_target, pitch, pos_z, roll):
         if pos_z < 1:
             done = True
-        elif dis_target > 20:
+        elif dis_target > 10:
             done = True
-        elif abs(roll) > 45 or abs(pitch) > 45:
+        elif abs(roll) > 60 or abs(pitch) > 60:
             done = True
         else:
             done = False

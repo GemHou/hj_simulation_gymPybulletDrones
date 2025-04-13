@@ -305,7 +305,7 @@ class BaseAviary(gym.Env):
         #### Return the initial observation ########################
         self.target_x = np.random.uniform(-10, 10) * percent
         self.target_y = np.random.uniform(-10, 10) * percent
-        self.target_z = 2.5 + np.random.uniform(-1.5, 1.5) * percent
+        self.target_z = 4 + np.random.uniform(-1.5, 1.5) * percent
         self.target_x_vel = np.random.uniform(-0.03, 0.03) * percent
         self.target_y_vel = np.random.uniform(-0.03, 0.03) * percent
         self.target_z_vel = np.random.uniform(-0.01, 0.01) * percent

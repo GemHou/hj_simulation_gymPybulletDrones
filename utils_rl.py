@@ -337,7 +337,7 @@ def collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_b
 
 
 def compute_loss_pi_with_entropy(data, ac, clip_ratio,
-                                 ent_coeff=0.000):  # You can adjust the value of ent_coeff ent_coeff= 0.001~0.02~0.1
+                                 ent_coeff=0.00):  # You can adjust the value of ent_coeff ent_coeff= 0.001~0.02~0.1
     obs, act, adv, logp_old = data['obs'], data['act'], data['adv'], data['logp']
 
     # Policy loss

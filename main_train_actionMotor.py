@@ -10,10 +10,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
-DEVICE_MAIN = torch.device("cuda:0")  # "cuda:0" "cpu"
+DEVICE_MAIN = torch.device("cpu")  # "cuda:0" "cpu"
 DEVICE_WORKER = torch.device("cpu")  # "cuda:0" "cpu"
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_21_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_21.pt"
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_33_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_33.pt"
 EPOCH = 2000  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = True  # True False
@@ -99,7 +99,7 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
               clip_ratio, train_pi_iters, train_v_iters, target_kl, epoch_queue,
               data_queue, bs_end, bs_start, env, list_ep_ret, max_ep_len):
     start_time = time.time()
-    if epoch < 20:
+    if epoch < 100:
         data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, DEVICE_MAIN)
     else:
         for i in range(2):
@@ -134,8 +134,8 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
 
 
 def main():
-    bs_start = 2000
-    bs_end = 20000
+    bs_start = 3000
+    bs_end = 100000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
