@@ -287,6 +287,17 @@ class BaseAviary(gym.Env):
         pbl.resetSimulation(physicsClientId=self.CLIENT)
         #### Housekeeping ##########################################
         self._housekeeping(percent)
+        # 创建一个视觉形状（球体）
+        sphere_visual_shape_start = pybullet.createVisualShape(shapeType=pybullet.GEOM_SPHERE,
+                                                  radius=0.1,
+                                                  rgbaColor=[0, 0, 1, 0.5])
+
+        # 创建一个刚体，仅使用视觉形状，不创建碰撞形状，质量设为 0
+        self.target_sphere_start = pybullet.createMultiBody(baseMass=0,
+                                        baseInertialFramePosition=[0, 0, 0],
+                                        baseVisualShapeIndex=sphere_visual_shape_start,
+                                        basePosition=[self.INIT_XYZS[0, 0], self.INIT_XYZS[0, 1], self.INIT_XYZS[0, 2]],
+                                        baseCollisionShapeIndex=-1)
         #### Update and store the drones kinematic information #####
         self._updateAndStoreKinematicInformation()
         #### Start video recording #################################
@@ -304,7 +315,7 @@ class BaseAviary(gym.Env):
         # 创建一个视觉形状（球体）
         sphere_visual_shape = pybullet.createVisualShape(shapeType=pybullet.GEOM_SPHERE,
                                                   radius=0.1,
-                                                  rgbaColor=[1, 0, 0, 1])
+                                                  rgbaColor=[1, 0, 0, 0.5])
 
         # 创建一个刚体，仅使用视觉形状，不创建碰撞形状，质量设为 0
         self.target_sphere = pybullet.createMultiBody(baseMass=0,

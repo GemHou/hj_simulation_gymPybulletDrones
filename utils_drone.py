@@ -6,16 +6,31 @@ from gym_pybullet_drones.envs import HoverAviary
 
 
 class HjAviary(HoverAviary):
+    def calc_done(self, dis_target, pitch, pos_z, roll):
+        if pos_z < 1:
+            done = True
+        elif dis_target > 100:
+            done = True
+        elif abs(roll) > 45 or abs(pitch) > 45:
+            done = True
+        else:
+            done = False
+        return done
+
     def _computeReward(self):
-        state = self._getDroneStateVector(0)  # pos 3 quat 4 ...
+        state = self._getDroneStateVector(0)  # state = np.hstack([pos, nth, rpy, vel, ang, last_clipped_action])  # 3 4 3 3 3 4
         # ret = max(0, 2 - np.linalg.norm(self.TARGET_POS - state[0:3]) ** 4)
         pos = state[:3]
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
         ang_v = state[13:16]
+        roll = state[7] * 180 / math.pi
+        pitch = state[8] * 180 / math.pi
+        dis_target = math.sqrt((pos_x - self.target_x) ** 2 + (pos_y - self.target_y) ** 2 + (pos_z - self.target_z) ** 2)
 
-        if pos_z < 1:
+        done = self.calc_done(dis_target, pitch, pos_z, roll)
+        if done:
             reward_done = -10
         else:
             reward_done = 0
@@ -37,22 +52,16 @@ class HjAviary(HoverAviary):
         return reward
 
     def _computeTerminated(self):
-        state = self._getDroneStateVector(0)
+        state = self._getDroneStateVector(0)  # state = np.hstack([pos, nth, rpy, vel, ang, last_clipped_action])  # 3 4 3 3 3 4
         pos = state[:3]
         pos_x = pos[0]
         pos_y = pos[1]
         pos_z = pos[2]
+        roll = state[7] * 180 / math.pi
+        pitch = state[8] * 180 / math.pi
+        dis_target = math.sqrt((pos_x - self.target_x) ** 2 + (pos_y - self.target_y) ** 2 + (pos_z - self.target_z) ** 2)
 
-        target_x = self.target_x
-        target_y = self.target_y
-        target_z = self.target_z
-        dis_target = math.sqrt((pos_x - target_x) ** 2 + (pos_y - target_y) ** 2 + (pos_z - target_z) ** 2)
-        if pos_z < 1:
-            done = True
-        elif dis_target > 100:
-            done = True
-        else:
-            done = False
+        done = self.calc_done(dis_target, pitch, pos_z, roll)
 
         return done
 

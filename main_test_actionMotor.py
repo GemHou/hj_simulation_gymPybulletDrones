@@ -12,7 +12,7 @@ DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # PID RL
 PERCENT = 0.1
 MAX_EP_LEN = 500
-LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_4.pt"  # _041212
+LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_3.pt"  # _041212
 
 
 def analyse_obs(obs_ma):
@@ -92,6 +92,7 @@ def main():
         ac.load_state_dict(state_dict)
 
         obs_ma, info = env.reset(PERCENT)
+        time.sleep(1)
         for j in range(MAX_EP_LEN):
             if CONTROL_MODE == "RL":
                 obs_tensor = torch.tensor(obs_ma[0], dtype=torch.float32)
