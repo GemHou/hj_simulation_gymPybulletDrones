@@ -1,4 +1,6 @@
 import os
+import random
+
 import numpy as np
 import pybullet as p
 from gymnasium import spaces
@@ -128,10 +130,11 @@ class BaseRLAviary(BaseAviary):
                        )
         else:
             if SCENARIO == "Arch":
-                p.loadURDF("samurai.urdf",
-                           physicsClientId=self.CLIENT,
-                           globalScaling=0.25
-                           )
+                if random.random() < 0.1:  # 0.1 1
+                    p.loadURDF("samurai.urdf",
+                               physicsClientId=self.CLIENT,
+                               globalScaling=0.25
+                               )
             # p.loadURDF("block.urdf",
             #            [1, 0, .1],
             #            p.getQuaternionFromEuler([0, 0, 0]),
