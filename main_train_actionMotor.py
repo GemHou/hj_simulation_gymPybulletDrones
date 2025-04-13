@@ -10,18 +10,19 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils_drone import HjAviary
 from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
-DEVICE = torch.device("cpu")
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_5_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_5.pt"
-EPOCH = 1500  # 200 1000 5000 2000
+DEVICE_MAIN = torch.device("cuda:0")  # "cuda:0" "cpu"
+DEVICE_WORKER = torch.device("cpu")  # "cuda:0" "cpu"
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_21_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_21.pt"
+EPOCH = 2000  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
-PERCENT_MODE = False  # True False
+PERCENT_MODE = True  # True False
 
 
 def setup_wandb():
     wandb.init(
         # mode="offline",
-        project="project-drone-20241115",
+        project="project-drone-20250413",
         resume=RESUME_NAME  # HjScenarioEnv
     )
 
@@ -39,7 +40,7 @@ def setup_actor_critic(env):
     act_dim = env.action_space.shape[1]
     ac = MLPActorCritic(env.observation_space, env.action_space)  # , hidden_sizes=(64, 128, 128)
     if LOAD_FROM is not None:
-        state_dict = torch.load(LOAD_FROM, map_location=torch.device(DEVICE))
+        state_dict = torch.load(LOAD_FROM, map_location=torch.device(DEVICE_MAIN))
         ac.load_state_dict(state_dict)
     return ac, obs_dim, act_dim
 
@@ -56,7 +57,7 @@ def setup_optimizers_and_schedulers(ac, pi_lr, vf_lr):
     return pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf
 
 
-def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, tensor_flag=True):
+def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, device, tensor_flag=True):
     local_steps_per_epoch = int((bs_end - bs_start) * epoch / EPOCH + bs_start)
     obs_dim = env.observation_space.shape[1]
     act_dim = env.action_space.shape[1]
@@ -67,7 +68,7 @@ def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, trai
         percent = epoch / EPOCH
     else:
         percent = 1
-    collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent, DEVICE)
+    collect_experience_once(ac, env, local_steps_per_epoch, max_ep_len, replay_buffer, list_ep_ret, percent, device)
     time_collect_experience_once = time.time() - time_start_collect_experience_once
     wandb.log({"8 throughout/TimeCollectExperienceOnce": time_collect_experience_once})
     wandb.log({"8 throughout/EnvRateWithReset": local_steps_per_epoch / time_collect_experience_once})
@@ -76,20 +77,21 @@ def collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, trai
     wandb.log({"7_1 spup increase/Time": life_long_time})
     # wandb.log({"8 throughout/LifeLongEnvRate": (epoch + 1) * local_steps_per_epoch / life_long_time})
     wandb.log({"8 throughout/LifeLongUpdateRate": (epoch + 1) * train_pi_iters / life_long_time})
-    data = replay_buffer.get(device=DEVICE, tensor_flag=tensor_flag)
+    data = replay_buffer.get(device=device, tensor_flag=tensor_flag)
     return data
 
 
 def worker(num, epoch_queue, data_queue, ac, bs_end, bs_start, env, list_ep_ret, max_ep_len, train_pi_iters):
+    ac.to(DEVICE_WORKER)
     while True:
         epoch = epoch_queue.get()
         try:
-            state_dict = torch.load(SAVE_PATH, map_location=torch.device(DEVICE))
+            state_dict = torch.load(SAVE_PATH, map_location=torch.device(DEVICE_WORKER))
             ac.load_state_dict(state_dict)
         except Exception:
             print("load fail!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             pass
-        data = collect_data(ac, bs_end / 2, bs_start / 2, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, tensor_flag=False)
+        data = collect_data(ac, bs_end / 2, bs_start / 2, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, DEVICE_WORKER, tensor_flag=False)
         data_queue.put(data)  # 将结果放入队列
 
 
@@ -97,8 +99,8 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
               clip_ratio, train_pi_iters, train_v_iters, target_kl, epoch_queue,
               data_queue, bs_end, bs_start, env, list_ep_ret, max_ep_len):
     start_time = time.time()
-    if epoch < 100:
-        data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters)
+    if epoch < 20:
+        data = collect_data(ac, bs_end, bs_start, env, epoch, list_ep_ret, max_ep_len, train_pi_iters, DEVICE_MAIN)
     else:
         for i in range(2):
             epoch_queue.put(epoch)
@@ -114,7 +116,7 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
         keys = ["obs", "act", "ret", "adv", "logp"]
         for key in keys:
             arrays = [datas[i][key] for i in range(num_p)]
-            data[key] = torch.from_numpy(np.concatenate(arrays, axis=0)).float()
+            data[key] = torch.from_numpy(np.concatenate(arrays, axis=0)).float().to(DEVICE_MAIN)
 
     time_collect_data_out = time.time() - start_time
     wandb.log({"8 throughout/TimeCollectExperienceOnceOut": time_collect_data_out})
@@ -133,7 +135,7 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
 
 def main():
     bs_start = 2000
-    bs_end = 50000
+    bs_end = 20000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80
@@ -164,6 +166,7 @@ def main():
     else:
         epoch_queue = None
         data_queue = None
+    ac.to(DEVICE_MAIN)
 
     for epoch in tqdm.tqdm(range(EPOCH)):
         run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,

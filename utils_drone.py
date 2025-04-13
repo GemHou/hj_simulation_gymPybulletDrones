@@ -9,7 +9,7 @@ class HjAviary(HoverAviary):
     def calc_done(self, dis_target, pitch, pos_z, roll):
         if pos_z < 1:
             done = True
-        elif dis_target > 100:
+        elif dis_target > 20:
             done = True
         elif abs(roll) > 45 or abs(pitch) > 45:
             done = True
@@ -45,7 +45,7 @@ class HjAviary(HoverAviary):
 
         reward_ang_v = 1 / (abs(ang_v[2]) / 1 + 1)
 
-        reward = reward_done + reward_target * 0.7 + reward_ang_v * 0.3  # + reward_z + reward_xy
+        reward = reward_done + reward_target * 0.9 + reward_ang_v * 0.1  # + reward_z + reward_xy
 
         reward = np.clip(reward, -1, 2)
 
