@@ -134,7 +134,7 @@ class BaseRLAviary(BaseAviary):
                 if random.random() < sce_prob:  # 0.1 1
                     p.loadURDF("samurai.urdf",
                                physicsClientId=self.CLIENT,
-                               globalScaling=0.25
+                               globalScaling=1  # 0.25
                                )
             # p.loadURDF("block.urdf",
             #            [1, 0, .1],
