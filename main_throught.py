@@ -10,10 +10,11 @@ from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # RL
-PERCENT = 1.0
+PERCENT = 0.0
 MAX_EP_LEN = 350
 LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_39.pt"  # _041212
 RENDER = False
+
 
 def main():
     wandb.init(
@@ -23,10 +24,10 @@ def main():
 
     ac = MLPActorCritic(env.observation_space, env.action_space)  # , hidden_sizes=(128, 128, 128)
 
+    frames = 0
+    start_time = time.time()
+
     for i in tqdm(range(100)):
-        state_dict = torch.load(LOAD_PATH,
-                                map_location=torch.device(DEVICE))
-        ac.load_state_dict(state_dict)
 
         obs_ma, info = env.reset(PERCENT)
         for j in range(MAX_EP_LEN):
@@ -40,16 +41,9 @@ def main():
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
             obs_ma = next_obs_ma
 
-            # env.render()
-            time.sleep(1 / 30)  #  * 10
-
-            if done:
-                if j > 10:
-                    time.sleep(0.1)
-                break
-            else:
-                if j ==0:
-                    time.sleep(0.1)
+        frames += j
+        fps = frames / (time.time() - start_time)
+        print("fps: ", fps)
 
 
 if __name__ == "__main__":
