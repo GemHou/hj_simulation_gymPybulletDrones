@@ -11,7 +11,7 @@ class HjAviary(HoverAviary):
             done = True
         elif dis_target > 20 * 1.732:
             done = True
-        elif abs(roll) > 30 or abs(pitch) > 30:
+        elif abs(roll) > 60 or abs(pitch) > 60:
             done = True
         else:
             done = False

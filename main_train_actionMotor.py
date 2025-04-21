@@ -12,9 +12,9 @@ from utils_rl import PPOBuffer, MLPActorCritic, collect_experience_once, update
 
 DEVICE_MAIN = torch.device("cpu")  # "cuda:0" "cpu"
 DEVICE_WORKER = torch.device("cpu")  # "cuda:0" "cpu"
-RESUME_NAME = "5900X_randomTMove_obs81_scenario_38_20250412"
-SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_38.pt"
-EPOCH = 500  # 200 1000 5000 2000
+RESUME_NAME = "5900X_randomTMove_obs81_scenario_41_20250412"
+SAVE_PATH = "./data/interim/para_randomTMove_obs81_scenario_41.pt"
+EPOCH = 2000  # 200 1000 5000 2000
 LOAD_FROM = None  # None "./data/interim/para_actionMotor_temp.pt"
 PERCENT_MODE = True  # True False
 
@@ -134,8 +134,8 @@ def run_epoch(epoch, ac, pi_optimizer, vf_optimizer, scheduler_pi, scheduler_vf,
 
 
 def main():
-    bs_start = 3000
-    bs_end = 100000
+    bs_start = 5000
+    bs_end = 20000
     max_ep_len = 500
     clip_ratio = 0.2  # 0.1 0.07 0.2
     train_pi_iters = 80

@@ -130,7 +130,7 @@ class BaseRLAviary(BaseAviary):
                        )
         else:
             if SCENARIO == "Arch":
-                sce_prob = np.clip(percent * 2 - 0.5, 0, 1)
+                sce_prob = np.clip(percent * 1.1 - 0.1, 0, 1)         #                percent * 2 - 0.5
                 if random.random() < sce_prob:  # 0.1 1
                     p.loadURDF("samurai.urdf",
                                physicsClientId=self.CLIENT,

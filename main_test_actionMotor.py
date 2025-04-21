@@ -10,9 +10,9 @@ from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # PID RL
-PERCENT = 0.7
-MAX_EP_LEN = 500
-LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_38.pt"  # _041212
+PERCENT = 1.0
+MAX_EP_LEN = 350
+LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_39.pt"  # _041212
 
 
 def analyse_obs(obs_ma):
@@ -110,11 +110,11 @@ def main():
 
             if done:
                 if j > 10:
-                    time.sleep(2)
+                    time.sleep(0.1)
                 break
             else:
                 if j ==0:
-                    time.sleep(1)
+                    time.sleep(0.1)
 
 
 if __name__ == "__main__":
