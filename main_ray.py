@@ -25,20 +25,20 @@ def main():
 
     obs_ma, info = env.reset(PERCENT)
 
-    for i in tqdm(range(128)):
-        x = i * 0.25
-        for j in range(128):
-            y = j * 0.25
+    for i in tqdm(range(128 * 6)):
+        x = (i - 128 * 3) * 0.25
+        for j in range(128 * 6):
+            y = (j - 128 * 3) * 0.25
             for k in range(128):
                 z = k * 0.25
                 ray_from = [x, y, z]
-                ray_to = [x, y, z+0.1]
+                ray_to = [x, y, z+0.25]
                 ray_results = p.rayTest(ray_from, ray_to)
                 if ray_results[0][0]!=-1:
                     # print("ray_results: ", ray_results)
                     draw_ball(ray_results[0][3])
 
-    time.sleep(10)
+    time.sleep(99999)
 
 
 def draw_ball(pos):
