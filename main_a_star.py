@@ -7,7 +7,7 @@ def draw_ball(pos, color=None):
     # 定义球体的参数
     if color is None:
         color = [1, 0, 0]  # 默认颜色为红色
-    radius = 10  # 球体的半径
+    radius = 2  # 球体的半径
 
     # 创建球体
     sphere = o3d.geometry.TriangleMesh.create_sphere(radius=radius)
@@ -19,7 +19,7 @@ def draw_ball(pos, color=None):
 
 def main():
     start_point = [0, 0, 0]
-    target_point = [10, 10, 10]
+    target_point = [0, 40, 10]
 
     # 绘制球体
     start_sphere = draw_ball(start_point, color=[1, 0, 0])  # 红色球体
@@ -34,7 +34,7 @@ def main():
         for y in range(occ_array.shape[1]):
             for z in range(occ_array.shape[2]):
                 if occ_array[x, y, z] == 1:
-                    points.append([x, y, z])
+                    points.append([(x-128*3) * 0.25, (y-128*3) * 0.25, z * 0.25])
 
     # 创建 Open3D 点云
     pcd = o3d.geometry.PointCloud()
