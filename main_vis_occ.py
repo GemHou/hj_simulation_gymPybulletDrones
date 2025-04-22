@@ -3,8 +3,8 @@ import open3d as o3d
 
 
 def main():
-    file_path = "./data/occ_array.npy"
-    occ_array = np.load(file_path)
+    occ_file_path = "./data/occ_array.npy"
+    occ_array = np.load(occ_file_path)
 
     # 将 3D occupancy array 转换为点云
     points = []

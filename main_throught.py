@@ -25,6 +25,9 @@ def main():
 
     ac = MLPActorCritic(env.observation_space, env.action_space)  # , hidden_sizes=(128, 128, 128)
 
+    occ_file_path = "./data/occ_array.npy"
+    occ_array = np.load(occ_file_path)
+
     for i in tqdm(range(100)):
         start_time_1 = time.time()
         obs_ma, info = env.reset(PERCENT)
@@ -46,6 +49,7 @@ def main():
             #     ray_from = [1, 2, 3]
             #     ray_to = [1, 2, 3]
             #     ray_results = pybullet.rayTest(ray_from, ray_to)
+            sub_occ_array = occ_array[:128, :128, :96]
 
             obs_ma = next_obs_ma
 
