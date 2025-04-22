@@ -14,7 +14,10 @@ CONTROL_MODE = "RL"  # RL
 PERCENT = 1.0
 MAX_EP_LEN = 1000
 LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_39.pt"  # _041212
-RENDER = True
+RENDER = False
+NUM_X = 128 * 6  # 6
+NUM_Y = 128 * 6  # 6
+NUM_Z = 128
 
 
 def main():
@@ -25,18 +28,20 @@ def main():
 
     obs_ma, info = env.reset(PERCENT)
 
-    for i in tqdm(range(128 * 6)):
-        x = (i - 128 * 3) * 0.25
-        for j in range(128 * 6):
-            y = (j - 128 * 3) * 0.25
-            for k in range(128):
+    for i in tqdm(range(NUM_X)):
+        x = (i - NUM_X/2) * 0.25
+        for j in range(NUM_Y):
+            y = (j - NUM_Y/2) * 0.25
+            for k in range(NUM_Z):
                 z = k * 0.25
                 ray_from = [x, y, z]
                 ray_to = [x, y, z+0.25]
                 ray_results = p.rayTest(ray_from, ray_to)
                 if ray_results[0][0]!=-1:
+                    pass
                     # print("ray_results: ", ray_results)
-                    draw_ball(ray_results[0][3])
+                    if RENDER:
+                        draw_ball(ray_results[0][3])
 
     time.sleep(99999)
 
