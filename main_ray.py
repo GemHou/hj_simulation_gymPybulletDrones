@@ -46,7 +46,7 @@ def main():
 
     obs_ma, info = env.reset(PERCENT)
 
-    occ_array = np.zeros((NUM_X, NUM_Y, NUM_Z))
+    occ_array = np.zeros((NUM_X, NUM_Y, NUM_Z), dtype=bool)
 
     for i in tqdm(range(NUM_X)):
         x = (i - NUM_X/2) * 0.25
@@ -55,7 +55,7 @@ def main():
             for k in range(NUM_Z):
                 z = k * 0.25
                 ray_from = [x, y, z]
-                ray_to = [x, y, z+0.25]
+                ray_to = [x+0.25, y+0.25, z+0.25]
                 ray_results = p.rayTest(ray_from, ray_to)
                 if ray_results[0][0]!=-1:
                     occ_array[i][j][k] = 1

@@ -119,8 +119,8 @@ def vis(occ_index, path_index, start_point, target_point):
 
 # 主函数
 def main():
-    start_pos = [0, 0, 0]
-    target_pos = [0, 40, 10]
+    start_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(0, 10)]
+    target_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(0, 10)]
 
     occ_file_path = "./data/occ_array.npy"
     occ_index = np.load(occ_file_path)
