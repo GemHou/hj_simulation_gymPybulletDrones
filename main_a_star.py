@@ -1,7 +1,8 @@
+import time
+import heapq
 import numpy as np
 import open3d as o3d
 from tqdm import tqdm
-import heapq
 from scipy.ndimage import binary_dilation
 
 
@@ -9,7 +10,7 @@ from scipy.ndimage import binary_dilation
 def draw_ball(pos, color=None):
     if color is None:
         color = [1, 0, 0]  # 默认颜色为红色
-    radius = 2  # 球体的半径
+    radius = 1  # 球体的半径
     sphere = o3d.geometry.TriangleMesh.create_sphere(radius=radius)
     sphere.translate(pos)  # 将球体移动到指定位置
     sphere.paint_uniform_color(color)  # 设置球体颜色
@@ -133,8 +134,8 @@ def vis(occ_index, path_index, start_point, target_point):
 
 # 主函数
 def main():
-    start_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(0, 10)]
-    target_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(0, 10)]
+    start_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(1, 10)]
+    target_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(1, 10)]
 
     occ_file_path = "./data/occ_array.npy"
     occ_index = np.load(occ_file_path)
@@ -145,7 +146,9 @@ def main():
     start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
 
+    start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
+    print("search time: ", time.time() - start_time)
 
     vis(dilated_occ_index, path_index, start_pos, target_pos)
 
