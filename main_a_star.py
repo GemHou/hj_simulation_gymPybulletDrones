@@ -2,6 +2,8 @@ import numpy as np
 import open3d as o3d
 from tqdm import tqdm
 import heapq
+from scipy.ndimage import binary_dilation
+
 
 # 定义球体绘制函数
 def draw_ball(pos, color=None):
@@ -13,13 +15,19 @@ def draw_ball(pos, color=None):
     sphere.paint_uniform_color(color)  # 设置球体颜色
     return sphere
 
+
 # 定义3D A*路径搜索算法
 def a_star_3d(start, goal, occ_index):
     def heuristic(a, b):
         return np.linalg.norm(np.array(a) - np.array(b))
 
     neighbors = [
-        (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1),
+        (1, 0, 0), (2, 0, 0),
+        (-1, 0, 0), (-2, 0, 0),
+        (0, 1, 0), (0, 2, 0),
+        (0, -1, 0), (0, -2, 0),
+        (0, 0, 1), (0, 0, 2),
+        (0, 0, -1), (0, 0, -2),
         (1, 1, 0), (1, -1, 0), (-1, 1, 0), (-1, -1, 0), (1, 0, 1), (1, 0, -1),
         (-1, 0, 1), (-1, 0, -1), (0, 1, 1), (0, 1, -1), (0, -1, 1), (0, -1, -1),
         (1, 1, 1), (1, 1, -1), (1, -1, 1), (1, -1, -1), (-1, 1, 1), (-1, 1, -1),
@@ -62,7 +70,7 @@ def a_star_3d(start, goal, occ_index):
 
     return None
 
-# 障碍物膨胀函数
+
 def dilate_obstacles(occ_index, dilation_radius=1):
     """
     对障碍物进行膨胀处理。
@@ -70,19 +78,14 @@ def dilate_obstacles(occ_index, dilation_radius=1):
     :param dilation_radius: 膨胀半径，默认为1
     :return: 膨胀后的占用网格数组
     """
-    dilated_occ_index = occ_index.copy()
-    shape = occ_index.shape
-    for x in tqdm(range(shape[0])):
-        for y in range(shape[1]):
-            for z in range(shape[2]):
-                if occ_index[x, y, z] == 1:
-                    for dx in range(-dilation_radius, dilation_radius + 1):
-                        for dy in range(-dilation_radius, dilation_radius + 1):
-                            for dz in range(-dilation_radius, dilation_radius + 1):
-                                nx, ny, nz = x + dx, y + dy, z + dz
-                                if 0 <= nx < shape[0] and 0 <= ny < shape[1] and 0 <= nz < shape[2]:
-                                    dilated_occ_index[nx, ny, nz] = 1
+    # 创建一个膨胀结构元素，大小为 (2 * dilation_radius + 1) 的立方体
+    structure = np.ones((2 * dilation_radius + 1, 2 * dilation_radius + 1, 2 * dilation_radius + 1))
+
+    # 使用 binary_dilation 进行膨胀
+    dilated_occ_index = binary_dilation(occ_index, structure=structure).astype(occ_index.dtype)
+
     return dilated_occ_index
+
 
 # 可视化函数
 def vis(occ_index, path_index, start_point, target_point):
@@ -105,14 +108,14 @@ def vis(occ_index, path_index, start_point, target_point):
     points[:, 1] = (indices[:, 1] - 128 * 3) * 0.25
     points[:, 2] = indices[:, 2] * 0.25
 
-
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(np.array(points))
 
     if path_index is not None:
         path_points = []
         for point_index in path_index:
-            path_points.append([(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
+            path_points.append(
+                [(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
         path_pcd = o3d.geometry.PointCloud()
         path_pcd.points = o3d.utility.Vector3dVector(path_points)
         path_pcd.paint_uniform_color([1, 0, 1])  # 路径颜色为紫色
@@ -127,6 +130,7 @@ def vis(occ_index, path_index, start_point, target_point):
         height=600
     )
 
+
 # 主函数
 def main():
     start_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(0, 10)]
@@ -136,7 +140,7 @@ def main():
     occ_index = np.load(occ_file_path)
 
     # 对障碍物进行膨胀处理
-    dilated_occ_index = dilate_obstacles(occ_index, dilation_radius=2)
+    dilated_occ_index = dilate_obstacles(occ_index, dilation_radius=3)
 
     start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
@@ -146,6 +150,7 @@ def main():
     vis(dilated_occ_index, path_index, start_pos, target_pos)
 
     print("Finished...")
+
 
 if __name__ == "__main__":
     main()
