@@ -66,8 +66,8 @@ def generate_action_pid(obs_ma,
     wandb.log({"y/goal_vel_y": goal_vel_y})
     goal_vel_y = np.clip(goal_vel_y, -2, 2)
     # goal_ang
-    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
-    goal_ang_x = np.clip(goal_ang_x, -0.05, 0.05)
+    goal_ang_x = (goal_vel_x - vel_x) * 0.2  # 0.02~0.05
+    goal_ang_x = np.clip(goal_ang_x, -0.5, 0.5)
     goal_ang_my = (goal_vel_y - vel_y) * -0.02
     goal_ang_my = np.clip(goal_ang_my, -0.05, 0.05)
     wandb.log({"x/goal_ang_x": goal_ang_x})
@@ -79,7 +79,7 @@ def generate_action_pid(obs_ma,
 
 def main():
     wandb.init(
-        project="project-drone-test-20241219",
+        project="project-drone-test-20250422",
     )
     env = HjAviaryActionAng(gui=True)
 
