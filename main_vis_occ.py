@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+from tqdm import tqdm
 
 
 def main():
@@ -8,7 +9,7 @@ def main():
 
     # 将 3D occupancy array 转换为点云
     points = []
-    for x in range(occ_array.shape[0]):
+    for x in tqdm(range(occ_array.shape[0])):
         for y in range(occ_array.shape[1]):
             for z in range(occ_array.shape[2]):
                 if occ_array[x, y, z] == 1:
