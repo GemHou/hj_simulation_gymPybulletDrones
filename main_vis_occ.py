@@ -32,8 +32,8 @@ def main():
     dilated_occ_index, drone_trajs, target_trajs = load_data()
 
     print("Loaded trajectories:")
-    for i, traj in enumerate(drone_trajs):
-        print(f"Trajectory {i + 1}: {traj.shape}")
+    for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
+        print(f"Trajectory {i + 1}: Drone {drone_traj.shape}, Target {target_traj.shape}")
 
     points = transfer_points(dilated_occ_index)
 
@@ -44,14 +44,25 @@ def main():
     # 创建轨迹线
     line_sets = []
     colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
-    for i, traj in enumerate(drone_trajs):
-        line_set = o3d.geometry.LineSet()
-        line_set.points = o3d.utility.Vector3dVector(traj)
-        line_indices = np.arange(len(traj) - 1).reshape(-1, 1)
-        line_indices = np.hstack((line_indices, line_indices + 1))
-        line_set.lines = o3d.utility.Vector2iVector(line_indices)
-        line_set.colors = o3d.utility.Vector3dVector([colors[i % len(colors)] for _ in range(len(traj) - 1)])
-        line_sets.append(line_set)
+
+    for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
+        # 创建无人机轨迹线
+        drone_line_set = o3d.geometry.LineSet()
+        drone_line_set.points = o3d.utility.Vector3dVector(drone_traj)
+        drone_line_indices = np.arange(len(drone_traj) - 1).reshape(-1, 1)
+        drone_line_indices = np.hstack((drone_line_indices, drone_line_indices + 1))
+        drone_line_set.lines = o3d.utility.Vector2iVector(drone_line_indices)
+        drone_line_set.colors = o3d.utility.Vector3dVector([colors[i % len(colors)] for _ in range(len(drone_traj) - 1)])
+        line_sets.append(drone_line_set)
+
+        # 创建目标轨迹线
+        target_line_set = o3d.geometry.LineSet()
+        target_line_set.points = o3d.utility.Vector3dVector(target_traj)
+        target_line_indices = np.arange(len(target_traj) - 1).reshape(-1, 1)
+        target_line_indices = np.hstack((target_line_indices, target_line_indices + 1))
+        target_line_set.lines = o3d.utility.Vector2iVector(target_line_indices)
+        target_line_set.colors = o3d.utility.Vector3dVector([colors[i % len(colors)] for _ in range(len(target_traj) - 1)])
+        line_sets.append(target_line_set)
 
     # 可视化点云和轨迹
     o3d.visualization.draw_geometries(
