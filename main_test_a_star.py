@@ -75,24 +75,24 @@ def calc_pid_vel(drone_pos, small_target_pos):
     # x
     pos_x = drone_pos[0]
     goal_pos_x = small_target_pos[0]
-    # if goal_pos_x - pos_x > 0.5:
-    #     goal_vel_x = 0.2
-    # elif goal_pos_x - pos_x < -0.5:
-    #     goal_vel_x = -0.2
-    # else:
-    #     goal_vel_x = 0
-    goal_vel_x = 0.5
+    if goal_pos_x - pos_x > 0.5:
+        goal_vel_x = 0.2
+    elif goal_pos_x - pos_x < -0.5:
+        goal_vel_x = -0.2
+    else:
+        goal_vel_x = 0
+    # goal_vel_x = 0.5
 
     # y
     pos_y = drone_pos[1]
     goal_pos_y = small_target_pos[1]
-    # if goal_pos_y - pos_y > 0.5:
-    #     goal_vel_y = 0.2
-    # elif goal_pos_y - pos_y < -0.5:
-    #     goal_vel_y = -0.2
-    # else:
-    #     goal_vel_y = 0
-    goal_vel_y = 0.5
+    if goal_pos_y - pos_y > 0.5:
+        goal_vel_y = 0.2
+    elif goal_pos_y - pos_y < -0.5:
+        goal_vel_y = -0.2
+    else:
+        goal_vel_y = 0
+    # goal_vel_y = 0.5
     return goal_vel_x, goal_vel_y, goal_vel_z
 
 
@@ -122,7 +122,7 @@ def calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last):
               action_vel_z + action_ang_my + action_ang_x - action_ang_z,
               action_vel_z + action_ang_my - action_ang_x + action_ang_z]
     action_ma = np.array([action])
-    return action_ma, vel_x_last, vel_y_last
+    return action_ma, vel_x_last, vel_y_last, drone_pos
 
 
 def main():
@@ -151,10 +151,13 @@ def main():
         vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
         while True:
-            # path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
-            # small_target_pos = path_points_pos[3]
+            target_pos = [env.target_x, env.target_y, env.target_z]
+            path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+            small_target_pos = path_points_pos[3]
 
-            action_ma, vel_x_last, vel_y_last = calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last)
+            print("small_target_pos: ", small_target_pos)
+
+            action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last)
 
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
