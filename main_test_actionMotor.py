@@ -10,9 +10,9 @@ from utils_drone import HjAviary
 
 DEVICE = torch.device("cpu")
 CONTROL_MODE = "RL"  # PID RL
-PERCENT = 1.0
+PERCENT = 0.4
 MAX_EP_LEN = 350
-LOAD_PATH = "./data/interim/para_randomTMove_obs81_scenario_39.pt"  # _041212
+LOAD_PATH = "./data/interim/para_randomTMove_obs81_5.pt"  # _041212
 
 
 def analyse_obs(obs_ma):
