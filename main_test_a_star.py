@@ -223,13 +223,11 @@ def main():
                     print("done")
                     break
         if save_flag:
-            # print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            # Convert list to numpy array and save
             drone_pos_array = np.array(list_drone_pos)
             target_pos_array = np.array(list_target_pos)
             current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-            file_name = f'./data/data_raw_0_1/data_raw_{current_time}.npy'
-            np.save(file_name, drone_pos_array)
+            file_name = f'./data/data_raw_0_2/data_raw_{current_time}.npz'
+            np.savez(file_name, drone_pos_array=drone_pos_array, target_pos_array=target_pos_array)
             print("Data_raw saved as numpy array.")
 
     print("Finished...")
