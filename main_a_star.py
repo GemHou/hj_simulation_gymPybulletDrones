@@ -51,6 +51,7 @@ def a_star_3d(start, goal, occ_index):
     start_time = time.time()
     while open_list:
         if time.time() - start_time > 0.5:
+            print("time out")
             return None
         _, current = heapq.heappop(open_list)
 
@@ -64,6 +65,8 @@ def a_star_3d(start, goal, occ_index):
             return path
 
         for neighbor in neighbors:
+            if time.time() - start_time > 0.5:
+                return None
             neighbor = (current[0] + neighbor[0], current[1] + neighbor[1], current[2] + neighbor[2])
             if (not (0 <= neighbor[0] < occ_index.shape[0] and
                      0 <= neighbor[1] < occ_index.shape[1] and
@@ -127,12 +130,16 @@ def main():
     start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
 
+    target_index[0] = np.clip(target_index[0], 0, 128*4-1)
+    target_index[1] = np.clip(target_index[1], 0, 128*4-1)
+    target_index[2] = np.clip(target_index[2], 0, 128-1)
+
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
     dilated_occ_index = np.load(dilated_occ_file_path)
 
     print("Processing path...")
     start_time = time.time()
-    path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
+    path_index = a_star_3d(start_index, target_index, dilated_occ_index)
     print("search time: ", time.time() - start_time)
 
     print("Rendering...")

@@ -57,6 +57,9 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
     start_index = [int(drone_pos[0] / 0.25 + 128 * 3), int(drone_pos[1] / 0.25 + 128 * 3), int(drone_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3),
                     int(target_pos[2] / 0.25)]
+    target_index[0] = np.clip(target_index[0], 0, 128 * 4 - 1)
+    target_index[1] = np.clip(target_index[1], 0, 128 * 4 - 1)
+    target_index[2] = np.clip(target_index[2], 0, 128 - 1)
     start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
     # print("search time: ", time.time() - start_time)
@@ -141,6 +144,9 @@ def main():
 
     print("Looping...")
     while True:
+        current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+        print(current_time, "reset...")
+
         save_flag = False
 
         obs_ma, info = env.reset(percent=1)
@@ -156,10 +162,11 @@ def main():
 
         path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
         if search_time > 0.5:
+            print("search_time > 0.5")
             continue
 
         if path_points_pos is None:
-            # print("start end point problem")
+            print("start end point problem")
             pass
         else:
             visualize_path(path_points_pos)  # 调用可视化函数
@@ -175,14 +182,17 @@ def main():
                 target_pos = [env.target_x, env.target_y, env.target_z]
                 path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
                 if search_time > 0.5:
+                    print("search_time > 0.5")
                     break
 
                 if path_points_pos is None:
+                    print("path_points_pos is None")
                     break
 
                 if len(path_points_pos) < 4:
                     if ep_len > 30 * 5:
                         save_flag = True
+                    print("len(path_points_pos) < 4")
                     break
 
                 small_target_pos = path_points_pos[3]
@@ -206,6 +216,7 @@ def main():
                     time.sleep(1 / 30)  # * 10
 
                 if done:
+                    print("done")
                     break
         if save_flag:
             # print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
