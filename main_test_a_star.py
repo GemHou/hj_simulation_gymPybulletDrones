@@ -6,22 +6,29 @@ from utils_drone import HjAviary
 from main_a_star import a_star_3d
 
 
+def vis_point(point, color=None):
+    if color is None:
+        color = [1, 0, 0, 0.5]
+
+    # 创建可视化描述符（球体）
+    visual_shape_id = p.createVisualShape(
+        shapeType=p.GEOM_SPHERE,
+        radius=0.1,
+        rgbaColor=color
+    )
+    # 创建多体对象
+    p.createMultiBody(
+        baseCollisionShapeIndex=-1,
+        baseVisualShapeIndex=visual_shape_id,
+        basePosition=point,
+        baseOrientation=[0, 0, 0, 1],
+        baseMass=0
+    )
+
+
 def visualize_path(path_points_pos, env):
     for point in path_points_pos:
-        # 创建可视化描述符（球体）
-        visual_shape_id = p.createVisualShape(
-            shapeType=p.GEOM_SPHERE,
-            radius=0.1,
-            rgbaColor=[1, 0, 0, 1]
-        )
-        # 创建多体对象
-        p.createMultiBody(
-            baseCollisionShapeIndex=-1,
-            baseVisualShapeIndex=visual_shape_id,
-            basePosition=point,
-            baseOrientation=[0, 0, 0, 1],
-            baseMass=0
-        )
+        vis_point(point)
 
 
 def analyze_obs(obs_ma):
@@ -73,10 +80,13 @@ def main():
 
         path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
 
-        print("path_points_pos: ", path_points_pos)
+        visualize_path(path_points_pos, env)  # 调用可视化函数
+
+        small_target_pos = path_points_pos[3]
+
+        vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
         if True:
-            visualize_path(path_points_pos, env)  # 调用可视化函数
             env.render()
             time.sleep(1 / 30)  # * 10
 
