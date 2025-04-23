@@ -76,9 +76,9 @@ def calc_pid_vel(drone_pos, small_target_pos):
     pos_x = drone_pos[0]
     goal_pos_x = small_target_pos[0]
     if goal_pos_x - pos_x > 0.5:
-        goal_vel_x = 0.2
+        goal_vel_x = 1
     elif goal_pos_x - pos_x < -0.5:
-        goal_vel_x = -0.2
+        goal_vel_x = -1
     else:
         goal_vel_x = 0
     # goal_vel_x = 0.5
@@ -87,9 +87,9 @@ def calc_pid_vel(drone_pos, small_target_pos):
     pos_y = drone_pos[1]
     goal_pos_y = small_target_pos[1]
     if goal_pos_y - pos_y > 0.5:
-        goal_vel_y = 0.2
+        goal_vel_y = 1
     elif goal_pos_y - pos_y < -0.5:
-        goal_vel_y = -0.2
+        goal_vel_y = -1
     else:
         goal_vel_y = 0
     # goal_vel_y = 0.5
