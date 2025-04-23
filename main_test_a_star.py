@@ -6,6 +6,8 @@ from datetime import datetime
 from utils_drone import HjAviary
 from main_a_star import a_star_3d
 
+RENDER = False
+
 
 def vis_point(point, color=None):
     if color is None:
@@ -57,7 +59,7 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
                     int(target_pos[2] / 0.25)]
     start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
-    print("search time: ", time.time() - start_time)
+    # print("search time: ", time.time() - start_time)
     if path_index is not None:
         path_points_pos = []
         for point_index in path_index:
@@ -102,7 +104,7 @@ def calc_pid_vel(drone_pos, small_target_pos):
 def calc_pid_ang(ang_my, ang_x, goal_vel_x, goal_vel_y, goal_vel_z, vel_x, vel_y, vel_z, acc_x, acc_y):
     vel_z_bias = vel_z - goal_vel_z
     action_vel_z = vel_z_bias * -10
-    print("vel_x: ", vel_x)
+    # print("vel_x: ", vel_x)
     goal_ang_x = (goal_vel_x - vel_x) * 0.02 - acc_x * 1  # 0.02~0.05
     goal_ang_my = (goal_vel_y - vel_y) * -0.02 + acc_y * 1
     action_ang_x = (goal_ang_x - ang_x) * 0.2
@@ -131,7 +133,7 @@ def calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last):
 
 def main():
     print("Load env...")
-    env = HjAviary(gui=True)  # , ctrl_freq=10, pyb_freq=100
+    env = HjAviary(gui=RENDER)  # , ctrl_freq=10, pyb_freq=100
 
     print("Load a-star...")
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
@@ -157,7 +159,8 @@ def main():
             continue
 
         if path_points_pos is None:
-            print("start end point problem")
+            # print("start end point problem")
+            pass
         else:
             visualize_path(path_points_pos)  # 调用可视化函数
 
@@ -184,7 +187,7 @@ def main():
 
                 small_target_pos = path_points_pos[3]
 
-                print("small_target_pos: ", small_target_pos)
+                # print("small_target_pos: ", small_target_pos)
 
                 action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
                                                                                 vel_y_last)
@@ -198,17 +201,18 @@ def main():
 
                 obs_ma = next_obs_ma
 
-                env.render()
-                time.sleep(1 / 30)  # * 10
+                if RENDER:
+                    env.render()
+                    time.sleep(1 / 30)  # * 10
 
                 if done:
                     break
         if save_flag:
-            print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            # print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             # Convert list to numpy array and save
             drone_pos_array = np.array(list_drone_pos)
             current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-            file_name = f'./data/drone_positions_{current_time}.npy'
+            file_name = f'./data/trajs/drone_positions_{current_time}.npy'
             np.save(file_name, drone_pos_array)
             print("Drone positions saved as numpy array.")
 

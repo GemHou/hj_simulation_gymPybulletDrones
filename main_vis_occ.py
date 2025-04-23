@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+import glob
 from tqdm import tqdm
 
 
@@ -18,43 +19,42 @@ def transfer_points(dilated_occ_index):
 def load_data():
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
     dilated_occ_index = np.load(dilated_occ_file_path)
-    traj_file_path_1 = "./data/drone_positions_20250423_175041.npy"
-    traj_1 = np.load(traj_file_path_1)
-    traj_file_path_2 = "./data/drone_positions_20250423_175306.npy"
-    traj_2 = np.load(traj_file_path_2)
-    return dilated_occ_index, traj_1, traj_2
+
+    # 获取所有轨迹文件路径
+    traj_file_paths = glob.glob("./data/trajs/drone_positions_*.npy")
+    trajs = [np.load(traj_file_path) for traj_file_path in traj_file_paths]
+
+    return dilated_occ_index, trajs
 
 
 def main():
-    dilated_occ_index, traj_1, traj_2 = load_data()
+    dilated_occ_index, trajs = load_data()
 
-    print("traj_1: ", traj_1)
-    print("traj_2: ", traj_2)
+    print("Loaded trajectories:")
+    for i, traj in enumerate(trajs):
+        print(f"Trajectory {i + 1}: {traj.shape}")
 
     points = transfer_points(dilated_occ_index)
 
     # 创建 Open3D 点云
     pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(np.array(points))
+    pcd.points = o3d.utility.Vector3dVector(points)
 
     # 创建轨迹线
-    line_set_1 = o3d.geometry.LineSet()
-    line_set_1.points = o3d.utility.Vector3dVector(traj_1)
-    line_indices_1 = np.arange(len(traj_1) - 1).reshape(-1, 1)
-    line_indices_1 = np.hstack((line_indices_1, line_indices_1 + 1))
-    line_set_1.lines = o3d.utility.Vector2iVector(line_indices_1)
-    line_set_1.colors = o3d.utility.Vector3dVector([[1, 0, 0] for _ in range(len(traj_1) - 1)])  # 红色
-
-    line_set_2 = o3d.geometry.LineSet()
-    line_set_2.points = o3d.utility.Vector3dVector(traj_2)
-    line_indices_2 = np.arange(len(traj_2) - 1).reshape(-1, 1)
-    line_indices_2 = np.hstack((line_indices_2, line_indices_2 + 1))
-    line_set_2.lines = o3d.utility.Vector2iVector(line_indices_2)
-    line_set_2.colors = o3d.utility.Vector3dVector([[0, 1, 0] for _ in range(len(traj_2) - 1)])  # 绿色
+    line_sets = []
+    colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
+    for i, traj in enumerate(trajs):
+        line_set = o3d.geometry.LineSet()
+        line_set.points = o3d.utility.Vector3dVector(traj)
+        line_indices = np.arange(len(traj) - 1).reshape(-1, 1)
+        line_indices = np.hstack((line_indices, line_indices + 1))
+        line_set.lines = o3d.utility.Vector2iVector(line_indices)
+        line_set.colors = o3d.utility.Vector3dVector([colors[i % len(colors)] for _ in range(len(traj) - 1)])
+        line_sets.append(line_set)
 
     # 可视化点云和轨迹
     o3d.visualization.draw_geometries(
-        [pcd, line_set_1, line_set_2],
+        [pcd] + line_sets,
         window_name="3D Occupancy and Trajectories Visualization",
         width=800,
         height=600
