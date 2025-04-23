@@ -56,7 +56,7 @@ def main():
         drone_colors = []
         for j in range(len(drone_traj) - 1):
             factor = j / (len(drone_traj) - 1)
-            new_color = [base_color[k] + (1 - base_color[k]) * factor for k in range(3)]
+            new_color = [1 - (1 - base_color[k]) * factor for k in range(3)]
             drone_colors.append(new_color)
         drone_line_set.lines = o3d.utility.Vector2iVector(drone_line_indices)
         drone_line_set.colors = o3d.utility.Vector3dVector(drone_colors)
@@ -70,7 +70,7 @@ def main():
         target_colors = []
         for j in range(len(target_traj) - 1):
             factor = j / (len(target_traj) - 1)
-            new_color = [base_color[k] + (1 - base_color[k]) * factor for k in range(3)]
+            new_color = [1 - (1 - base_color[k]) * factor for k in range(3)]
             target_colors.append(new_color)
         target_line_set.lines = o3d.utility.Vector2iVector(target_line_indices)
         target_line_set.colors = o3d.utility.Vector3dVector(target_colors)

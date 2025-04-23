@@ -173,6 +173,9 @@ def main():
         else:
             visualize_path(path_points_pos)  # 调用可视化函数
 
+            if len(path_points_pos) < 4:
+                print("len(path_points_pos) < 4")
+                continue
             small_target_pos = path_points_pos[3]
 
             vis_point(small_target_pos, color=[0, 1, 1, 0.5])
