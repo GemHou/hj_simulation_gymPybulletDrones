@@ -21,7 +21,7 @@ def load_data():
     dilated_occ_index = np.load(dilated_occ_file_path)
 
     # 获取所有轨迹文件路径
-    traj_file_paths = glob.glob("./data/trajs/drone_positions_*.npy")
+    traj_file_paths = glob.glob("./data/data_raw_0_1/drone_positions_*.npy")
     trajs = [np.load(traj_file_path) for traj_file_path in traj_file_paths]
 
     return dilated_occ_index, trajs
