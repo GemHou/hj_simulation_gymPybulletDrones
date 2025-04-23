@@ -37,8 +37,28 @@ def main():
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(np.array(points))
 
-    # 可视化点云
-    o3d.visualization.draw_geometries([pcd], window_name="3D Occupancy Visualization", width=800, height=600)
+    # 创建轨迹线
+    line_set_1 = o3d.geometry.LineSet()
+    line_set_1.points = o3d.utility.Vector3dVector(traj_1)
+    line_indices_1 = np.arange(len(traj_1) - 1).reshape(-1, 1)
+    line_indices_1 = np.hstack((line_indices_1, line_indices_1 + 1))
+    line_set_1.lines = o3d.utility.Vector2iVector(line_indices_1)
+    line_set_1.colors = o3d.utility.Vector3dVector([[1, 0, 0] for _ in range(len(traj_1) - 1)])  # 红色
+
+    line_set_2 = o3d.geometry.LineSet()
+    line_set_2.points = o3d.utility.Vector3dVector(traj_2)
+    line_indices_2 = np.arange(len(traj_2) - 1).reshape(-1, 1)
+    line_indices_2 = np.hstack((line_indices_2, line_indices_2 + 1))
+    line_set_2.lines = o3d.utility.Vector2iVector(line_indices_2)
+    line_set_2.colors = o3d.utility.Vector3dVector([[0, 1, 0] for _ in range(len(traj_2) - 1)])  # 绿色
+
+    # 可视化点云和轨迹
+    o3d.visualization.draw_geometries(
+        [pcd, line_set_1, line_set_2],
+        window_name="3D Occupancy and Trajectories Visualization",
+        width=800,
+        height=600
+    )
 
     print("Finished...")
 
