@@ -3,7 +3,6 @@ import heapq
 import numpy as np
 import open3d as o3d
 from tqdm import tqdm
-from scipy.ndimage import binary_dilation
 
 
 # 定义球体绘制函数
@@ -72,22 +71,6 @@ def a_star_3d(start, goal, occ_index):
     return None
 
 
-def dilate_obstacles(occ_index, dilation_radius=1):
-    """
-    对障碍物进行膨胀处理。
-    :param occ_index: 三维占用网格数组
-    :param dilation_radius: 膨胀半径，默认为1
-    :return: 膨胀后的占用网格数组
-    """
-    # 创建一个膨胀结构元素，大小为 (2 * dilation_radius + 1) 的立方体
-    structure = np.ones((2 * dilation_radius + 1, 2 * dilation_radius + 1, 2 * dilation_radius + 1))
-
-    # 使用 binary_dilation 进行膨胀
-    dilated_occ_index = binary_dilation(occ_index, structure=structure).astype(occ_index.dtype)
-
-    return dilated_occ_index
-
-
 # 可视化函数
 def vis(occ_index, path_index, start_point, target_point):
     start_sphere = draw_ball(start_point, color=[1, 0, 0])  # 红色球体
@@ -140,13 +123,8 @@ def main():
     start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
 
-    occ_file_path = "./data/occ_array.npy"
-    occ_index = np.load(occ_file_path)
-
-    print("Processing occ...")
-    start_time = time.time()
-    dilated_occ_index = dilate_obstacles(occ_index, dilation_radius=3)
-    print("dilate time: ", time.time() - start_time)
+    dilated_occ_file_path = "./data/dilated_occ_index.npy"
+    dilated_occ_index = np.load(dilated_occ_file_path)
 
     print("Processing path...")
     start_time = time.time()
