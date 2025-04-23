@@ -16,7 +16,7 @@ import pybullet_data
 import gymnasium as gym
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ImageType
 
-SCENARIO = "None"  # "None" "Farm" "Arch"
+SCENARIO = "Arch"  # "None" "Farm" "Arch"
 GLOBAL_SCALING = 1
 
 
