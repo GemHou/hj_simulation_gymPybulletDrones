@@ -3,10 +3,7 @@ import open3d as o3d
 from tqdm import tqdm
 
 
-def main():
-    dilated_occ_file_path = "./data/dilated_occ_index.npy"
-    dilated_occ_index = np.load(dilated_occ_file_path)
-
+def transfer_points(dilated_occ_index):
     # 假设 occ_index 是一个三维布尔数组
     # 获取满足条件的索引
     indices = np.argwhere(dilated_occ_index == 1)
@@ -15,6 +12,26 @@ def main():
     points[:, 0] = (indices[:, 0] - 128 * 3) * 0.25
     points[:, 1] = (indices[:, 1] - 128 * 3) * 0.25
     points[:, 2] = indices[:, 2] * 0.25
+    return points
+
+
+def load_data():
+    dilated_occ_file_path = "./data/dilated_occ_index.npy"
+    dilated_occ_index = np.load(dilated_occ_file_path)
+    traj_file_path_1 = "./data/drone_positions_20250423_175041.npy"
+    traj_1 = np.load(traj_file_path_1)
+    traj_file_path_2 = "./data/drone_positions_20250423_175306.npy"
+    traj_2 = np.load(traj_file_path_2)
+    return dilated_occ_index, traj_1, traj_2
+
+
+def main():
+    dilated_occ_index, traj_1, traj_2 = load_data()
+
+    print("traj_1: ", traj_1)
+    print("traj_2: ", traj_2)
+
+    points = transfer_points(dilated_occ_index)
 
     # 创建 Open3D 点云
     pcd = o3d.geometry.PointCloud()
