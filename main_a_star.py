@@ -48,7 +48,10 @@ def a_star_3d(start, goal, occ_index):
     g_score = {start: 0}
     f_score = {start: heuristic(start, goal)}
 
+    start_time = time.time()
     while open_list:
+        if time.time() - start_time>0.5:
+            return None
         _, current = heapq.heappop(open_list)
 
         if current == goal:

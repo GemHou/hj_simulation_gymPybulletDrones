@@ -50,6 +50,7 @@ def analyze_obs(obs_ma):
 
 
 def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
+    start_time = time.time()
     start_index = [int(drone_pos[0] / 0.25 + 128 * 3), int(drone_pos[1] / 0.25 + 128 * 3), int(drone_pos[2] / 0.25)]
     target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3),
                     int(target_pos[2] / 0.25)]
@@ -63,7 +64,8 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
                 [(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
     else:
         path_points_pos = None
-    return path_points_pos
+    search_time = time.time() - start_time
+    return path_points_pos, search_time
 
 
 def calc_pid_vel(drone_pos, small_target_pos):
@@ -135,7 +137,9 @@ def main():
     dilated_occ_index = np.load(dilated_occ_file_path)
 
     print("Looping...")
-    if True:
+    while True:
+        save_flag = False
+
         obs_ma, info = env.reset(percent=1)
 
         drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
@@ -143,7 +147,10 @@ def main():
         vel_y_last = vel_y
         target_pos = [env.target_x, env.target_y, env.target_z]
 
-        path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+        path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+        if search_time > 0.5:
+            continue
+
         if path_points_pos is None:
             print("start end point problem")
         else:
@@ -153,9 +160,23 @@ def main():
 
             vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
+            ep_len = 0
+
             while True:
+                ep_len += 1
                 target_pos = [env.target_x, env.target_y, env.target_z]
-                path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+                path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+                if search_time > 0.5:
+                    break
+
+                if path_points_pos is None:
+                    break
+
+                if len(path_points_pos) < 4:
+                    if ep_len > 30 * 5:
+                        save_flag = True
+                    break
+
                 small_target_pos = path_points_pos[3]
 
                 print("small_target_pos: ", small_target_pos)
@@ -175,6 +196,8 @@ def main():
 
                 if done:
                     break
+        if save_flag:
+            print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     print("Finished...")
     time.sleep(666)
