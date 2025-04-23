@@ -50,7 +50,7 @@ def a_star_3d(start, goal, occ_index):
 
     start_time = time.time()
     while open_list:
-        if time.time() - start_time>0.5:
+        if time.time() - start_time > 0.5:
             return None
         _, current = heapq.heappop(open_list)
 
@@ -68,7 +68,7 @@ def a_star_3d(start, goal, occ_index):
             if (not (0 <= neighbor[0] < occ_index.shape[0] and
                      0 <= neighbor[1] < occ_index.shape[1] and
                      0 <= neighbor[2] < occ_index.shape[2]) or
-                occ_index[neighbor[0], neighbor[1], neighbor[2]] == 1):
+                    occ_index[neighbor[0], neighbor[1], neighbor[2]] == 1):
                 continue
 
             tentative_g_score = g_score[current] + 1

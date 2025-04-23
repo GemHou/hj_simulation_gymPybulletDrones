@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import pybullet as p
+from datetime import datetime
 
 from utils_drone import HjAviary
 from main_a_star import a_star_3d
@@ -142,10 +143,14 @@ def main():
 
         obs_ma, info = env.reset(percent=1)
 
+        list_drone_pos = []
+
         drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
         vel_x_last = vel_x
         vel_y_last = vel_y
         target_pos = [env.target_x, env.target_y, env.target_z]
+
+        list_drone_pos.append(drone_pos)
 
         path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
         if search_time > 0.5:
@@ -184,6 +189,8 @@ def main():
                 action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
                                                                                 vel_y_last)
 
+                list_drone_pos.append(drone_pos)
+
                 next_obs_ma, reward, done, truncated, info = env.step(
                     action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
 
@@ -198,6 +205,12 @@ def main():
                     break
         if save_flag:
             print("Save!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            # Convert list to numpy array and save
+            drone_pos_array = np.array(list_drone_pos)
+            current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+            file_name = f'./data/drone_positions_{current_time}.npy'
+            np.save(file_name, drone_pos_array)
+            print("Drone positions saved as numpy array.")
 
     print("Finished...")
     time.sleep(666)
