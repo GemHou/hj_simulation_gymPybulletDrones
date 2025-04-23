@@ -66,26 +66,63 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
     return path_points_pos
 
 
-def calc_pid_control(obs_ma, small_target_pos):
-    drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
+def calc_pid_vel(drone_pos, small_target_pos):
+    # z
     pos_z = drone_pos[2]
     goal_pos_z = small_target_pos[2]
     goal_vel_z = (goal_pos_z - pos_z) * 0.5
-    goal_vel_x = 0
-    goal_vel_y = 0
+
+    # x
+    pos_x = drone_pos[0]
+    goal_pos_x = small_target_pos[0]
+    # if goal_pos_x - pos_x > 0.5:
+    #     goal_vel_x = 0.2
+    # elif goal_pos_x - pos_x < -0.5:
+    #     goal_vel_x = -0.2
+    # else:
+    #     goal_vel_x = 0
+    goal_vel_x = 0.5
+
+    # y
+    pos_y = drone_pos[1]
+    goal_pos_y = small_target_pos[1]
+    # if goal_pos_y - pos_y > 0.5:
+    #     goal_vel_y = 0.2
+    # elif goal_pos_y - pos_y < -0.5:
+    #     goal_vel_y = -0.2
+    # else:
+    #     goal_vel_y = 0
+    goal_vel_y = 0.5
+    return goal_vel_x, goal_vel_y, goal_vel_z
+
+
+def calc_pid_ang(ang_my, ang_x, goal_vel_x, goal_vel_y, goal_vel_z, vel_x, vel_y, vel_z, acc_x, acc_y):
     vel_z_bias = vel_z - goal_vel_z
     action_vel_z = vel_z_bias * -10
-    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
-    goal_ang_my = (goal_vel_y - vel_y) * -0.02
+    print("vel_x: ", vel_x)
+    goal_ang_x = (goal_vel_x - vel_x) * 0.02 - acc_x * 1  # 0.02~0.05
+    goal_ang_my = (goal_vel_y - vel_y) * -0.02 + acc_y * 1
     action_ang_x = (goal_ang_x - ang_x) * 0.2
     action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
     action_ang_z = 0  # 0.01
+    return action_ang_my, action_ang_x, action_ang_z, action_vel_z
+
+
+def calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last):
+    drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
+    acc_x = vel_x - vel_x_last
+    acc_y = vel_y - vel_y_last
+    vel_x_last = vel_x
+    vel_y_last = vel_y
+    goal_vel_x, goal_vel_y, goal_vel_z = calc_pid_vel(drone_pos, small_target_pos)
+    action_ang_my, action_ang_x, action_ang_z, action_vel_z = calc_pid_ang(ang_my, ang_x, goal_vel_x, goal_vel_y,
+                                                                           goal_vel_z, vel_x, vel_y, vel_z, acc_x, acc_y)
     action = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
               action_vel_z - action_ang_my + action_ang_x + action_ang_z,
               action_vel_z + action_ang_my + action_ang_x - action_ang_z,
               action_vel_z + action_ang_my - action_ang_x + action_ang_z]
     action_ma = np.array([action])
-    return action_ma
+    return action_ma, vel_x_last, vel_y_last
 
 
 def main():
@@ -101,6 +138,8 @@ def main():
         obs_ma, info = env.reset(percent=1)
 
         drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
+        vel_x_last = vel_x
+        vel_y_last = vel_y
         target_pos = [env.target_x, env.target_y, env.target_z]
 
         path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
@@ -112,7 +151,10 @@ def main():
         vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
         while True:
-            action_ma = calc_pid_control(obs_ma, small_target_pos)
+            # path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+            # small_target_pos = path_points_pos[3]
+
+            action_ma, vel_x_last, vel_y_last = calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last)
 
             next_obs_ma, reward, done, truncated, info = env.step(
                 action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
