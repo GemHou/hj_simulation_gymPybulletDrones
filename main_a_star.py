@@ -21,6 +21,14 @@ def a_star_3d(start, goal, occ_index):
     def heuristic(a, b):
         return np.linalg.norm(np.array(a) - np.array(b))
 
+    # Check if start or goal point is occupied or invalid
+    if occ_index[start[0], start[1], start[2]] == 1:
+        print("Start point is occupied!")
+        return None
+    if occ_index[goal[0], goal[1], goal[2]] == 1:
+        print("Goal point is occupied!")
+        return None
+
     neighbors = [
         (1, 0, 0), (2, 0, 0),
         (-1, 0, 0), (-2, 0, 0),
@@ -54,11 +62,10 @@ def a_star_3d(start, goal, occ_index):
 
         for neighbor in neighbors:
             neighbor = (current[0] + neighbor[0], current[1] + neighbor[1], current[2] + neighbor[2])
-            if not (0 <= neighbor[0] < occ_index.shape[0] and
-                    0 <= neighbor[1] < occ_index.shape[1] and
-                    0 <= neighbor[2] < occ_index.shape[2]):
-                continue
-            if occ_index[neighbor[0], neighbor[1], neighbor[2]] == 1:
+            if (not (0 <= neighbor[0] < occ_index.shape[0] and
+                     0 <= neighbor[1] < occ_index.shape[1] and
+                     0 <= neighbor[2] < occ_index.shape[2]) or
+                occ_index[neighbor[0], neighbor[1], neighbor[2]] == 1):
                 continue
 
             tentative_g_score = g_score[current] + 1
@@ -68,6 +75,7 @@ def a_star_3d(start, goal, occ_index):
                 f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal)
                 heapq.heappush(open_list, (f_score[neighbor], neighbor))
 
+    print("No path found!")
     return None
 
 
