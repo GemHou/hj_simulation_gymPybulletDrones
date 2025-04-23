@@ -4,16 +4,17 @@ from tqdm import tqdm
 
 
 def main():
-    occ_file_path = "./data/occ_array.npy"
-    occ_array = np.load(occ_file_path)
+    dilated_occ_file_path = "./data/dilated_occ_index.npy"
+    dilated_occ_index = np.load(dilated_occ_file_path)
 
-    # 将 3D occupancy array 转换为点云
-    points = []
-    for x in tqdm(range(occ_array.shape[0])):
-        for y in range(occ_array.shape[1]):
-            for z in range(occ_array.shape[2]):
-                if occ_array[x, y, z] == 1:
-                    points.append([x, y, z])
+    # 假设 occ_index 是一个三维布尔数组
+    # 获取满足条件的索引
+    indices = np.argwhere(dilated_occ_index == 1)
+    # 转换坐标
+    points = np.zeros((indices.shape[0], 3))
+    points[:, 0] = (indices[:, 0] - 128 * 3) * 0.25
+    points[:, 1] = (indices[:, 1] - 128 * 3) * 0.25
+    points[:, 2] = indices[:, 2] * 0.25
 
     # 创建 Open3D 点云
     pcd = o3d.geometry.PointCloud()

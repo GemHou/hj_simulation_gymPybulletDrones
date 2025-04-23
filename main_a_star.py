@@ -87,16 +87,9 @@ def vis(occ_index, path_index, start_point, target_point):
     start_sphere = draw_ball(start_point, color=[1, 0, 0])  # 红色球体
     target_sphere = draw_ball(target_point, color=[0, 1, 0])  # 绿色球体
 
-    # points = []
-    # for x in tqdm(range(occ_index.shape[0])):
-    #     for y in range(occ_index.shape[1]):
-    #         for z in range(occ_index.shape[2]):
-    #             if occ_index[x, y, z] == 1:
-    #                 points.append([(x - 128 * 3) * 0.25, (y - 128 * 3) * 0.25, z * 0.25])
     # 假设 occ_index 是一个三维布尔数组
     # 获取满足条件的索引
     indices = np.argwhere(occ_index == 1)
-
     # 转换坐标
     points = np.zeros((indices.shape[0], 3))
     points[:, 0] = (indices[:, 0] - 128 * 3) * 0.25
