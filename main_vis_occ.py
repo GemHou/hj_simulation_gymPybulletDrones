@@ -21,17 +21,18 @@ def load_data():
     dilated_occ_index = np.load(dilated_occ_file_path)
 
     # 获取所有轨迹文件路径
-    traj_file_paths = glob.glob("./data/data_raw_0_1/drone_positions_*.npy")
-    trajs = [np.load(traj_file_path) for traj_file_path in traj_file_paths]
+    traj_file_paths = glob.glob("./data/data_raw_0_2/data_raw_*.npz")
+    drone_trajs = [np.load(traj_file_path)["drone_pos_array"] for traj_file_path in traj_file_paths]
+    target_trajs = [np.load(traj_file_path)["target_pos_array"] for traj_file_path in traj_file_paths]
 
-    return dilated_occ_index, trajs
+    return dilated_occ_index, drone_trajs, target_trajs
 
 
 def main():
-    dilated_occ_index, trajs = load_data()
+    dilated_occ_index, drone_trajs, target_trajs = load_data()
 
     print("Loaded trajectories:")
-    for i, traj in enumerate(trajs):
+    for i, traj in enumerate(drone_trajs):
         print(f"Trajectory {i + 1}: {traj.shape}")
 
     points = transfer_points(dilated_occ_index)
@@ -43,7 +44,7 @@ def main():
     # 创建轨迹线
     line_sets = []
     colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
-    for i, traj in enumerate(trajs):
+    for i, traj in enumerate(drone_trajs):
         line_set = o3d.geometry.LineSet()
         line_set.points = o3d.utility.Vector3dVector(traj)
         line_indices = np.arange(len(traj) - 1).reshape(-1, 1)
