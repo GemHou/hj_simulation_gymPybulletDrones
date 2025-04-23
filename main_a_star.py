@@ -144,8 +144,9 @@ def main():
     occ_index = np.load(occ_file_path)
 
     print("Processing occ...")
-    # 对障碍物进行膨胀处理
+    start_time = time.time()
     dilated_occ_index = dilate_obstacles(occ_index, dilation_radius=3)
+    print("dilate time: ", time.time() - start_time)
 
     print("Processing path...")
     start_time = time.time()
