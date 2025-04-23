@@ -134,22 +134,25 @@ def vis(occ_index, path_index, start_point, target_point):
 
 # 主函数
 def main():
+    print("Loading...")
     start_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(1, 10)]
     target_pos = [np.random.randint(0, 50), np.random.randint(0, 50), np.random.randint(1, 10)]
+    start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
+    target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
 
     occ_file_path = "./data/occ_array.npy"
     occ_index = np.load(occ_file_path)
 
+    print("Processing occ...")
     # 对障碍物进行膨胀处理
     dilated_occ_index = dilate_obstacles(occ_index, dilation_radius=3)
 
-    start_index = [int(start_pos[0] / 0.25 + 128 * 3), int(start_pos[1] / 0.25 + 128 * 3), int(start_pos[2] / 0.25)]
-    target_index = [int(target_pos[0] / 0.25 + 128 * 3), int(target_pos[1] / 0.25 + 128 * 3), int(target_pos[2] / 0.25)]
-
+    print("Processing path...")
     start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
     print("search time: ", time.time() - start_time)
 
+    print("Rendering...")
     vis(dilated_occ_index, path_index, start_pos, target_pos)
 
     print("Finished...")
