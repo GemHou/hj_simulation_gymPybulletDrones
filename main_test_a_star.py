@@ -1,11 +1,30 @@
 import time
 import numpy as np
+import pybullet as p
 
 from utils_drone import HjAviary
 from main_a_star import a_star_3d
 
 
-def analyse_obs(obs_ma):
+def visualize_path(path_points_pos, env):
+    for point in path_points_pos:
+        # 创建可视化描述符（球体）
+        visual_shape_id = p.createVisualShape(
+            shapeType=p.GEOM_SPHERE,
+            radius=0.1,
+            rgbaColor=[1, 0, 0, 1]
+        )
+        # 创建多体对象
+        p.createMultiBody(
+            baseCollisionShapeIndex=-1,
+            baseVisualShapeIndex=visual_shape_id,
+            basePosition=point,
+            baseOrientation=[0, 0, 0, 1],
+            baseMass=0
+        )
+
+
+def analyze_obs(obs_ma):
     obs_12 = obs_ma[:, :12]
     pos = obs_12[0, 0:3]
     rpy = obs_12[0, 3:6]
@@ -49,7 +68,7 @@ def main():
     if True:
         obs_ma, info = env.reset(percent=1)
 
-        drone_pos = analyse_obs(obs_ma)
+        drone_pos = analyze_obs(obs_ma)
         target_pos = [env.target_x, env.target_y, env.target_z]
 
         path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
@@ -57,6 +76,7 @@ def main():
         print("path_points_pos: ", path_points_pos)
 
         if True:
+            visualize_path(path_points_pos, env)  # 调用可视化函数
             env.render()
             time.sleep(1 / 30)  # * 10
 
