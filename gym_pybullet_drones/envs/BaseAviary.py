@@ -28,10 +28,13 @@ class BaseAviary(gym.Env):
     ################################################################################
 
     def hj_random_init(self, percent):
+        # x = 0
+        # y = 0
+        # z = 3
         # stage 1
-        x = np.random.uniform(-10, 10)
-        y = np.random.uniform(-10, 10)
-        z = np.random.uniform(0.1, 10)
+        x = np.random.uniform(-50, 50)
+        y = np.random.uniform(-50, 50)
+        z = np.random.uniform(0.1, 20)
         # stage 2
         # x = np.random.uniform(-4, 4)
         # y = np.random.uniform(-4, 4)
@@ -303,9 +306,18 @@ class BaseAviary(gym.Env):
         #### Start video recording #################################
         self._startVideoRecording()
         #### Return the initial observation ########################
-        self.target_x = np.random.uniform(-10, 10) * percent
-        self.target_y = np.random.uniform(-10, 10) * percent
-        self.target_z = 1.5 + np.random.uniform(-1.5, 5) * percent
+        # self.target_x = 0
+        # self.target_y = 40
+        # self.target_z = 5
+
+        # self.target_x = np.random.uniform(-10, 10) * percent
+        # self.target_y = np.random.uniform(-10, 10) * percent
+        # self.target_z = 1.5 + np.random.uniform(-1.5, 5) * percent
+
+        self.target_x = self.INIT_XYZS[0, 0] + np.random.uniform(-10, 10)
+        self.target_y = self.INIT_XYZS[0, 1] + np.random.uniform(-10, 10)
+        self.target_z = np.random.uniform(0.5, 3)
+
         self.target_x_vel = np.random.uniform(-0.02, 0.02) * percent
         self.target_y_vel = np.random.uniform(-0.02, 0.02) * percent
         self.target_z_vel = np.random.uniform(-0.01, 0.01) * percent

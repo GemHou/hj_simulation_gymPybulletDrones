@@ -8,7 +8,7 @@ from main_a_star import a_star_3d
 
 def vis_point(point, color=None):
     if color is None:
-        color = [1, 0, 0, 0.5]
+        color = [1, 0, 1, 0.5]
 
     # 创建可视化描述符（球体）
     visual_shape_id = p.createVisualShape(
@@ -26,7 +26,7 @@ def vis_point(point, color=None):
     )
 
 
-def visualize_path(path_points_pos, env):
+def visualize_path(path_points_pos):
     for point in path_points_pos:
         vis_point(point)
 
@@ -62,7 +62,7 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
             path_points_pos.append(
                 [(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
     else:
-        raise
+        path_points_pos = None
     return path_points_pos
 
 
@@ -116,7 +116,8 @@ def calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last):
     vel_y_last = vel_y
     goal_vel_x, goal_vel_y, goal_vel_z = calc_pid_vel(drone_pos, small_target_pos)
     action_ang_my, action_ang_x, action_ang_z, action_vel_z = calc_pid_ang(ang_my, ang_x, goal_vel_x, goal_vel_y,
-                                                                           goal_vel_z, vel_x, vel_y, vel_z, acc_x, acc_y)
+                                                                           goal_vel_z, vel_x, vel_y, vel_z, acc_x,
+                                                                           acc_y)
     action = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
               action_vel_z - action_ang_my + action_ang_x + action_ang_z,
               action_vel_z + action_ang_my + action_ang_x - action_ang_z,
@@ -143,34 +144,37 @@ def main():
         target_pos = [env.target_x, env.target_y, env.target_z]
 
         path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+        if path_points_pos is None:
+            print("start end point problem")
+        else:
+            visualize_path(path_points_pos)  # 调用可视化函数
 
-        visualize_path(path_points_pos, env)  # 调用可视化函数
-
-        small_target_pos = path_points_pos[3]
-
-        vis_point(small_target_pos, color=[0, 1, 1, 0.5])
-
-        while True:
-            target_pos = [env.target_x, env.target_y, env.target_z]
-            path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
             small_target_pos = path_points_pos[3]
 
-            print("small_target_pos: ", small_target_pos)
+            vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
-            action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last)
+            while True:
+                target_pos = [env.target_x, env.target_y, env.target_z]
+                path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+                small_target_pos = path_points_pos[3]
 
-            next_obs_ma, reward, done, truncated, info = env.step(
-                action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
+                print("small_target_pos: ", small_target_pos)
 
-            # SAVE next_obs_ma data
+                action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
+                                                                                vel_y_last)
 
-            obs_ma = next_obs_ma
+                next_obs_ma, reward, done, truncated, info = env.step(
+                    action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
 
-            env.render()
-            time.sleep(1 / 30)  # * 10
+                # SAVE next_obs_ma data
 
-            if done:
-                break
+                obs_ma = next_obs_ma
+
+                env.render()
+                time.sleep(1 / 30)  # * 10
+
+                if done:
+                    break
 
     print("Finished...")
     time.sleep(666)
