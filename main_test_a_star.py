@@ -46,7 +46,7 @@ def analyze_obs(obs_ma):
     pos_x = pos[0]
     pos_y = pos[1]
     pos_z = pos[2]
-    return pos
+    return pos, vel_z, vel_x, vel_y, ang_x, ang_my
 
 
 def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
@@ -56,11 +56,36 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
     start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
     print("search time: ", time.time() - start_time)
-    path_points_pos = []
-    for point_index in path_index:
-        path_points_pos.append(
-            [(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
+    if path_index is not None:
+        path_points_pos = []
+        for point_index in path_index:
+            path_points_pos.append(
+                [(point_index[0] - 128 * 3) * 0.25, (point_index[1] - 128 * 3) * 0.25, point_index[2] * 0.25])
+    else:
+        raise
     return path_points_pos
+
+
+def calc_pid_control(obs_ma, small_target_pos):
+    drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
+    pos_z = drone_pos[2]
+    goal_pos_z = small_target_pos[2]
+    goal_vel_z = (goal_pos_z - pos_z) * 0.5
+    goal_vel_x = 0
+    goal_vel_y = 0
+    vel_z_bias = vel_z - goal_vel_z
+    action_vel_z = vel_z_bias * -10
+    goal_ang_x = (goal_vel_x - vel_x) * 0.02  # 0.02~0.05
+    goal_ang_my = (goal_vel_y - vel_y) * -0.02
+    action_ang_x = (goal_ang_x - ang_x) * 0.2
+    action_ang_my = (goal_ang_my - ang_my) * 0.2  # 0.01
+    action_ang_z = 0  # 0.01
+    action = [action_vel_z - action_ang_my - action_ang_x - action_ang_z,
+              action_vel_z - action_ang_my + action_ang_x + action_ang_z,
+              action_vel_z + action_ang_my + action_ang_x - action_ang_z,
+              action_vel_z + action_ang_my - action_ang_x + action_ang_z]
+    action_ma = np.array([action])
+    return action_ma
 
 
 def main():
@@ -75,7 +100,7 @@ def main():
     if True:
         obs_ma, info = env.reset(percent=1)
 
-        drone_pos = analyze_obs(obs_ma)
+        drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
         target_pos = [env.target_x, env.target_y, env.target_z]
 
         path_points_pos = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
@@ -86,9 +111,21 @@ def main():
 
         vis_point(small_target_pos, color=[0, 1, 1, 0.5])
 
-        if True:
+        while True:
+            action_ma = calc_pid_control(obs_ma, small_target_pos)
+
+            next_obs_ma, reward, done, truncated, info = env.step(
+                action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
+
+            # SAVE next_obs_ma data
+
+            obs_ma = next_obs_ma
+
             env.render()
             time.sleep(1 / 30)  # * 10
+
+            if done:
+                break
 
     print("Finished...")
     time.sleep(666)
