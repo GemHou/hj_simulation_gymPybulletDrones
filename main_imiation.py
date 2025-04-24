@@ -85,6 +85,7 @@ def main():
         val_running_loss = 0.0
         val_running_ade = 0.0
         with torch.no_grad():
+            vis_count = 0
             for drone_pos, target_pos, future_traj in tqdm(val_dataloader):
                 drone_pos = drone_pos.to(device)
                 target_pos = target_pos.to(device)
@@ -101,6 +102,8 @@ def main():
 
                 # 可视化预测轨迹和真实轨迹
                 for i in range(len(outputs)):
+                    if vis_count >= 10:
+                        break
                     predicted_traj = outputs[i].cpu().numpy()
                     true_traj = future_traj[i].cpu().numpy()
 
@@ -113,8 +116,13 @@ def main():
                     pcd_true.points = o3d.utility.Vector3dVector(true_traj)
                     pcd_true.paint_uniform_color([0, 1, 0])  # 绿色表示真实轨迹
 
-                    # 可视化
-                    o3d.visualization.draw_geometries([pcd_predicted, pcd_true])
+                    # 保存为 PLY 文件
+                    o3d.io.write_point_cloud(f'predicted_{vis_count}.ply', pcd_predicted)
+                    o3d.io.write_point_cloud(f'true_{vis_count}.ply', pcd_true)
+
+                    vis_count += 1
+                if vis_count >= 10:
+                    break
 
         # 每个 epoch 记录平均验证损失到 TensorBoard
         val_avg_loss = val_running_loss / len(val_dataloader)
