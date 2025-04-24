@@ -116,9 +116,11 @@ def main():
                     pcd_true.points = o3d.utility.Vector3dVector(true_traj)
                     pcd_true.paint_uniform_color([0, 1, 0])  # 绿色表示真实轨迹
 
-                    # 保存为 PLY 文件
-                    o3d.io.write_point_cloud(f'predicted_{vis_count}.ply', pcd_predicted)
-                    o3d.io.write_point_cloud(f'true_{vis_count}.ply', pcd_true)
+                    # 合并点云
+                    combined_pcd = pcd_predicted + pcd_true
+
+                    # 保存为 PLY 文件，文件名标注训练回合数
+                    o3d.io.write_point_cloud(f'epoch_{epoch}_combined_{vis_count}.ply', combined_pcd)
 
                     vis_count += 1
                 if vis_count >= 10:
