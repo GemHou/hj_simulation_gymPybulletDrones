@@ -24,8 +24,6 @@ def load_data():
     traj_file_paths = glob.glob("./data/data_raw_0_2/data_raw_*.npz")
     traj_file_paths.sort()
 
-    traj_file_paths = traj_file_paths[:5000]
-
     drone_trajs = []
     target_trajs = []
 
@@ -40,9 +38,16 @@ def load_data():
 def main():
     dilated_occ_index, drone_trajs, target_trajs = load_data()
 
+    total_frames = 0
     print("Loaded trajectories:")
     for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
         print(f"Trajectory {i + 1}: Drone {drone_traj.shape}, Target {target_traj.shape}")
+        frames_in_trajectory = drone_traj.shape[0]
+        total_frames += frames_in_trajectory
+    print(f"Total frames: {total_frames}")
+
+    drone_trajs = drone_trajs[:5000]
+    target_trajs = target_trajs[:5000]
 
     print("transfer_points...")
     points = transfer_points(dilated_occ_index)
