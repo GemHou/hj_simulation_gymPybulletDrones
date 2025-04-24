@@ -22,8 +22,17 @@ def load_data():
 
     # 获取所有轨迹文件路径
     traj_file_paths = glob.glob("./data/data_raw_0_2/data_raw_*.npz")
-    drone_trajs = [np.load(traj_file_path)["drone_pos_array"] for traj_file_path in traj_file_paths]
-    target_trajs = [np.load(traj_file_path)["target_pos_array"] for traj_file_path in traj_file_paths]
+    traj_file_paths.sort()
+
+    traj_file_paths = traj_file_paths[:5000]
+
+    drone_trajs = []
+    target_trajs = []
+
+    for traj_file_path in tqdm(traj_file_paths):
+        # print("traj_file_path: ", traj_file_path)
+        drone_trajs.append(np.load(traj_file_path)["drone_pos_array"])
+        target_trajs.append(np.load(traj_file_path)["target_pos_array"])
 
     return dilated_occ_index, drone_trajs, target_trajs
 
@@ -35,17 +44,20 @@ def main():
     for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
         print(f"Trajectory {i + 1}: Drone {drone_traj.shape}, Target {target_traj.shape}")
 
+    print("transfer_points...")
     points = transfer_points(dilated_occ_index)
 
     # 创建 Open3D 点云
+    print("o3d point")
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
 
     # 创建轨迹线
+    print("o3d line")
     line_sets = []
     base_colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
 
-    for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
+    for i, (drone_traj, target_traj) in tqdm(enumerate(zip(drone_trajs, target_trajs))):
         base_color = base_colors[i % len(base_colors)]
 
         # 创建无人机轨迹线
@@ -77,6 +89,7 @@ def main():
         line_sets.append(target_line_set)
 
     # 可视化点云和轨迹
+    print("o3d vis")
     o3d.visualization.draw_geometries(
         [pcd] + line_sets,
         window_name="3D Occupancy and Trajectories Visualization",
