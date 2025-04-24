@@ -53,13 +53,13 @@ class TrajectoryPredictor(nn.Module):
 def main():
     # 创建训练集和数据加载器
     print("Loading training dataset...")
-    train_npz_file = './data/data_processed_0_1/train_data_processed_20250424_160608.npz'  # 训练数据文件路径
+    train_npz_file = './data/data_processed_0_1/train_data_processed_20250424_163317.npz'  # 训练数据文件路径
     train_dataset = TrajectoryDataset(train_npz_file)
     train_dataloader = DataLoader(train_dataset, batch_size=32 * 32, shuffle=True)
 
     # 创建验证集和数据加载器
     print("Loading validation dataset...")
-    val_npz_file = './data/data_processed_0_1/val_data_processed_20250424_160608.npz'  # 验证数据文件路径
+    val_npz_file = './data/data_processed_0_1/val_data_processed_20250424_163317.npz'  # 验证数据文件路径
     val_dataset = TrajectoryDataset(val_npz_file)
     val_dataloader = DataLoader(val_dataset, batch_size=32 * 32, shuffle=False)
 
