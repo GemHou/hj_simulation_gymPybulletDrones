@@ -1,54 +1,18 @@
 import torch
-import numpy as np
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 from datetime import datetime
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter  # 导入 TensorBoard 的 SummaryWriter
 import open3d as o3d  # 导入 Open3D
+
+from utils_dataset import TrajectoryDataset
+from utils_model import TrajectoryPredictor
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device: ", device)
-
-
-# 自定义数据集类
-class TrajectoryDataset(Dataset):
-    def __init__(self, npz_file):
-        """
-        Args:
-            npz_file (str): Path to the npz file containing the dataset.
-        """
-        # 加载数据
-        data = np.load(npz_file)
-        self.drone_positions = torch.tensor(data['array_drone_pos'], dtype=torch.float32)
-        self.target_positions = torch.tensor(data['array_target_pos'], dtype=torch.float32)
-        self.future_trajectories = torch.tensor(data['array_future_traj'], dtype=torch.float32)
-
-    def __len__(self):
-        return len(self.drone_positions)
-
-    def __getitem__(self, idx):
-        return self.drone_positions[idx], self.target_positions[idx], self.future_trajectories[idx]
-
-
-# 定义神经网络模型
-class TrajectoryPredictor(nn.Module):
-    def __init__(self):
-        super(TrajectoryPredictor, self).__init__()
-        self.fc1 = nn.Linear(6, 128)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(128, 30 * 3)
-        self.output = nn.Unflatten(1, (30, 3))
-
-    def forward(self, drone_pos, target_pos):
-        x = torch.cat((drone_pos, target_pos), dim=1)
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.fc2(x)
-        x = self.output(x)
-        return x
 
 
 def main():
