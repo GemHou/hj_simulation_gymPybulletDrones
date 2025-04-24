@@ -7,7 +7,7 @@ from main_a_star import a_star_3d
 from utils_pid import analyze_obs, calc_pid_control
 from utils_vis import vis_point, visualize_path
 
-RENDER = False
+RENDER_PYBULLET = False
 
 
 def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
@@ -30,9 +30,9 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
     return path_points_pos, search_time
 
 
-def initialize_environment():
+def initialize_environment(render_pybullet):
     print("Load env...")
-    env = HjAviary(gui=RENDER)
+    env = HjAviary(gui=render_pybullet)
     print("Load a-star...")
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
     dilated_occ_index = np.load(dilated_occ_file_path)
@@ -72,7 +72,8 @@ def perform_path_search(dilated_occ_index, drone_pos, target_pos):
     return path_points_pos, small_target_pos
 
 
-def control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos):
+def control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos,
+                 render_pybullet):
     ep_len = 0
     save_flag = False
     while True:
@@ -98,7 +99,7 @@ def control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_la
         list_target_pos.append(target_pos)
         next_obs_ma, reward, done, truncated, info = env.step(action_ma)
         obs_ma = next_obs_ma
-        if RENDER:
+        if render_pybullet:
             env.render()
             time.sleep(1 / 30)
         if done:
@@ -118,7 +119,7 @@ def save_data(save_flag, list_drone_pos, list_target_pos):
 
 
 def main():
-    env, dilated_occ_index = initialize_environment()
+    env, dilated_occ_index = initialize_environment(RENDER_PYBULLET)
     print("Looping...")
     while True:
         obs_ma, save_flag, list_drone_pos, list_target_pos, drone_pos, vel_x_last, vel_y_last, target_pos = reset_environment(
@@ -127,7 +128,8 @@ def main():
         if path_result is None:
             continue
         save_flag, list_drone_pos, list_target_pos = control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
-                                                                  vel_y_last, list_drone_pos, list_target_pos)
+                                                                  vel_y_last, list_drone_pos, list_target_pos,
+                                                                  RENDER_PYBULLET)
         save_data(save_flag, list_drone_pos, list_target_pos)
     print("Finished...")
     time.sleep(666)
