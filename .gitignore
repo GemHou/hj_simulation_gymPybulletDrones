@@ -436,3 +436,4 @@ TSWLatexianTemp*
 /.idea/
 /wandb/
 /data/
+/runs/
