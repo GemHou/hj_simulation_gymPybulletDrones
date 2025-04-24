@@ -36,13 +36,43 @@ def main():
     array_target_pos = np.array(list_target_pos)
     array_future_traj = np.array(list_future_traj)
 
+    # 按7:2:1比例切分数据集
+    num_samples = len(array_drone_pos)
+    train_size = int(num_samples * 0.7)
+    val_size = int(num_samples * 0.2)
+    test_size = num_samples - train_size - val_size
+
+    train_drone_pos = array_drone_pos[:train_size]
+    train_target_pos = array_target_pos[:train_size]
+    train_future_traj = array_future_traj[:train_size]
+
+    val_drone_pos = array_drone_pos[train_size:train_size + val_size]
+    val_target_pos = array_target_pos[train_size:train_size + val_size]
+    val_future_traj = array_future_traj[train_size:train_size + val_size]
+
+    test_drone_pos = array_drone_pos[train_size + val_size:]
+    test_target_pos = array_target_pos[train_size + val_size:]
+    test_future_traj = array_future_traj[train_size + val_size:]
+
     current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-    file_name = f'./data/data_processed_0_1/data_processed_{current_time}.npz'
-    np.savez(file_name,
-             array_drone_pos=array_drone_pos,
-             array_target_pos=array_target_pos,
-             array_future_traj=array_future_traj)
-    print("Data_raw saved as numpy array.")
+    train_file_name = f'./data/data_processed_0_1/train_data_processed_{current_time}.npz'
+    val_file_name = f'./data/data_processed_0_1/val_data_processed_{current_time}.npz'
+    test_file_name = f'./data/data_processed_0_1/test_data_processed_{current_time}.npz'
+
+    np.savez(train_file_name,
+             array_drone_pos=train_drone_pos,
+             array_target_pos=train_target_pos,
+             array_future_traj=train_future_traj)
+    np.savez(val_file_name,
+             array_drone_pos=val_drone_pos,
+             array_target_pos=val_target_pos,
+             array_future_traj=val_future_traj)
+    np.savez(test_file_name,
+             array_drone_pos=test_drone_pos,
+             array_target_pos=test_target_pos,
+             array_future_traj=test_future_traj)
+
+    print("Data split and saved as numpy arrays.")
 
     print("Finished...")
 
