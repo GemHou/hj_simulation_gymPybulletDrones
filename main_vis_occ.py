@@ -16,7 +16,7 @@ def transfer_points(dilated_occ_index):
     return points
 
 
-def load_data():
+def load_occ_data():
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
     dilated_occ_index = np.load(dilated_occ_file_path)
 
@@ -87,7 +87,7 @@ def create_all_line_sets(drone_trajs, target_trajs):
 
 
 def main():
-    dilated_occ_index, drone_trajs, target_trajs = load_data()
+    dilated_occ_index, drone_trajs, target_trajs = load_occ_data()
     print_trajectory_info(drone_trajs, target_trajs)
 
     drone_trajs = drone_trajs[:5000]

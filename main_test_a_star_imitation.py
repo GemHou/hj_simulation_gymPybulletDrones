@@ -36,6 +36,13 @@ def visualize_outputs(outputs):
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="Trajectory Visualization")
 
+    # o3d.visualization.draw_geometries(
+    #     [pcd],
+    #     window_name="3D Occupancy and Trajectories Visualization",
+    #     width=800,
+    #     height=600
+    # )
+
     # 添加点云到窗口
     vis.add_geometry(pcd)
 
@@ -51,10 +58,31 @@ def visualize_outputs(outputs):
     vis.destroy_window()
 
 
+def transfer_points(dilated_occ_index):
+    # 假设 occ_index 是一个三维布尔数组
+    # 获取满足条件的索引
+    indices = np.argwhere(dilated_occ_index == 1)
+    # 转换坐标
+    points = np.zeros((indices.shape[0], 3))
+    points[:, 0] = (indices[:, 0] - 128 * 3) * 0.25
+    points[:, 1] = (indices[:, 1] - 128 * 3) * 0.25
+    points[:, 2] = indices[:, 2] * 0.25
+    return points
+
+
+def create_point_cloud(points):
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+    return pcd
+
+
 def main():
     env, dilated_occ_index = initialize_environment()
-    model_path = './data/models/model_epoch_2.pth'  # 替换为实际的模型文件路径
+    model_path = './data/models/model_epoch_10.pth'  # 替换为实际的模型文件路径
     model = load_model(model_path)
+    if RENDER:
+        points = transfer_points(dilated_occ_index)
+        pcd = create_point_cloud(points)
     print("Looping...")
     while True:
         obs_ma, save_flag, list_drone_pos, list_target_pos, drone_pos, vel_x_last, vel_y_last, target_pos = reset_environment(
