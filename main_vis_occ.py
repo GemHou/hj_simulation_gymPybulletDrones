@@ -35,9 +35,7 @@ def load_data():
     return dilated_occ_index, drone_trajs, target_trajs
 
 
-def main():
-    dilated_occ_index, drone_trajs, target_trajs = load_data()
-
+def print_trajectory_info(drone_trajs, target_trajs):
     total_frames = 0
     print("Loaded trajectories:")
     for i, (drone_traj, target_traj) in enumerate(zip(drone_trajs, target_trajs)):
@@ -46,19 +44,29 @@ def main():
         total_frames += frames_in_trajectory
     print(f"Total frames: {total_frames}")
 
-    drone_trajs = drone_trajs[:5000]
-    target_trajs = target_trajs[:5000]
 
-    print("transfer_points...")
-    points = transfer_points(dilated_occ_index)
-
-    # 创建 Open3D 点云
-    print("o3d point")
+def create_point_cloud(points):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
+    return pcd
 
-    # 创建轨迹线
-    print("o3d line")
+
+def create_line_set(traj, base_color):
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(traj)
+    line_indices = np.arange(len(traj) - 1).reshape(-1, 1)
+    line_indices = np.hstack((line_indices, line_indices + 1))
+    colors = []
+    for j in range(len(traj) - 1):
+        factor = j / (len(traj) - 1)
+        new_color = [1 - (1 - base_color[k]) * factor for k in range(3)]
+        colors.append(new_color)
+    line_set.lines = o3d.utility.Vector2iVector(line_indices)
+    line_set.colors = o3d.utility.Vector3dVector(colors)
+    return line_set
+
+
+def create_all_line_sets(drone_trajs, target_trajs):
     line_sets = []
     base_colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
 
@@ -68,32 +76,33 @@ def main():
         base_color = base_colors[i % len(base_colors)]
 
         # 创建无人机轨迹线
-        drone_line_set = o3d.geometry.LineSet()
-        drone_line_set.points = o3d.utility.Vector3dVector(drone_traj)
-        drone_line_indices = np.arange(len(drone_traj) - 1).reshape(-1, 1)
-        drone_line_indices = np.hstack((drone_line_indices, drone_line_indices + 1))
-        drone_colors = []
-        for j in range(len(drone_traj) - 1):
-            factor = j / (len(drone_traj) - 1)
-            new_color = [1 - (1 - base_color[k]) * factor for k in range(3)]
-            drone_colors.append(new_color)
-        drone_line_set.lines = o3d.utility.Vector2iVector(drone_line_indices)
-        drone_line_set.colors = o3d.utility.Vector3dVector(drone_colors)
+        drone_line_set = create_line_set(drone_traj, base_color)
         line_sets.append(drone_line_set)
 
         # 创建目标轨迹线
-        target_line_set = o3d.geometry.LineSet()
-        target_line_set.points = o3d.utility.Vector3dVector(target_traj)
-        target_line_indices = np.arange(len(target_traj) - 1).reshape(-1, 1)
-        target_line_indices = np.hstack((target_line_indices, target_line_indices + 1))
-        target_colors = []
-        for j in range(len(target_traj) - 1):
-            factor = j / (len(target_traj) - 1)
-            new_color = [1 - (1 - base_color[k]) * factor for k in range(3)]
-            target_colors.append(new_color)
-        target_line_set.lines = o3d.utility.Vector2iVector(target_line_indices)
-        target_line_set.colors = o3d.utility.Vector3dVector(target_colors)
+        target_line_set = create_line_set(target_traj, base_color)
         line_sets.append(target_line_set)
+
+    return line_sets
+
+
+def main():
+    dilated_occ_index, drone_trajs, target_trajs = load_data()
+    print_trajectory_info(drone_trajs, target_trajs)
+
+    drone_trajs = drone_trajs[:5000]
+    target_trajs = target_trajs[:5000]
+
+    print("transfer_points...")
+    points = transfer_points(dilated_occ_index)
+
+    # 创建 Open3D 点云
+    print("o3d point")
+    pcd = create_point_cloud(points)
+
+    # 创建轨迹线
+    print("o3d line")
+    line_sets = create_all_line_sets(drone_trajs, target_trajs)
 
     # 可视化点云和轨迹
     print("o3d vis")
