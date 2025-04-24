@@ -159,6 +159,9 @@ def main():
         train_avg_loss, train_avg_ade = train_model(model, criterion, optimizer, train_dataloader, writer, epoch)
         val_avg_loss, val_avg_ade = validate_model(model, criterion, val_dataloader, writer, epoch)
 
+        # 在每个回合保存模型
+        torch.save(model.state_dict(), f'./data/models/model_epoch_{epoch + 1}.pth')
+
     # 关闭 TensorBoard 的 SummaryWriter
     writer.close()
 
