@@ -72,7 +72,7 @@ def perform_path_search(dilated_occ_index, drone_pos, target_pos):
     return path_points_pos, small_target_pos
 
 
-def control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos,
+def control_loop_astar(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos,
                  render_pybullet):
     ep_len = 0
     save_flag = False
@@ -127,7 +127,7 @@ def main():
         path_result = perform_path_search(dilated_occ_index, drone_pos, target_pos)
         if path_result is None:
             continue
-        save_flag, list_drone_pos, list_target_pos = control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
+        save_flag, list_drone_pos, list_target_pos = control_loop_astar(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
                                                                   vel_y_last, list_drone_pos, list_target_pos,
                                                                   RENDER_PYBULLET)
         save_data(save_flag, list_drone_pos, list_target_pos)

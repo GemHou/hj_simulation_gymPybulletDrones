@@ -3,13 +3,14 @@ import torch
 import open3d as o3d
 import numpy as np
 
-from main_test_a_star import initialize_environment, perform_path_search, reset_environment, control_loop, save_data
+from main_test_a_star import initialize_environment, perform_path_search, reset_environment, save_data, search_a_star_pos, calc_pid_control
 from utils_model import TrajectoryPredictor
 
 RENDER_OPEN3D = False
 RENDER_PYBULLET = True
 DEVICE = torch.device("cpu")
 print("DEVICE: ", DEVICE)
+CONTROL_MODE = "nn"  # astar nn
 
 
 def load_model(model_path):
@@ -38,13 +39,6 @@ def visualize_outputs(outputs, pcd_occ, drone_pos):
     # 创建可视化窗口
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name="Trajectory Visualization")
-
-    # o3d.visualization.draw_geometries(
-    #     [pcd],
-    #     window_name="3D Occupancy and Trajectories Visualization",
-    #     width=800,
-    #     height=600
-    # )
 
     # 添加点云到窗口
     vis.add_geometry(pcd_traj)
@@ -80,6 +74,42 @@ def create_point_cloud(points):
     return pcd_occ
 
 
+
+def control_loop_nn(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos,
+                 render_pybullet):
+    ep_len = 0
+    save_flag = False
+    while True:
+        ep_len += 1
+        target_pos = [env.target_x, env.target_y, env.target_z]
+        path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+        if search_time > 0.5:
+            print("search_time > 0.5")
+            break
+        if path_points_pos is None:
+            print("path_points_pos is None")
+            break
+        if len(path_points_pos) < 4:
+            if ep_len > 30 * 5:
+                save_flag = True
+            print("len(path_points_pos) < 4")
+            break
+        small_target_pos = path_points_pos[3]
+        action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
+                                                                        vel_y_last)
+        target_pos = [env.target_x, env.target_y, env.target_z]
+        list_drone_pos.append(drone_pos)
+        list_target_pos.append(target_pos)
+        next_obs_ma, reward, done, truncated, info = env.step(action_ma)
+        obs_ma = next_obs_ma
+        if render_pybullet:
+            env.render()
+            time.sleep(1 / 30)
+        if done:
+            print("done")
+            break
+    return save_flag, list_drone_pos, list_target_pos
+
 def main():
     env, dilated_occ_index = initialize_environment(RENDER_PYBULLET)
     model_path = './data/models/model_epoch_10.pth'  # 替换为实际的模型文件路径
@@ -99,7 +129,7 @@ def main():
         outputs = model(tensor_drone_pos, tensor_target_pos)
         if RENDER_OPEN3D:
             visualize_outputs(outputs, pcd_occ, drone_pos)  # 调用可视化函数
-        save_flag, list_drone_pos, list_target_pos = control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
+        save_flag, list_drone_pos, list_target_pos = control_loop_nn(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
                                                                   vel_y_last, list_drone_pos, list_target_pos,
                                                                   RENDER_PYBULLET)
         save_data(save_flag, list_drone_pos, list_target_pos)
