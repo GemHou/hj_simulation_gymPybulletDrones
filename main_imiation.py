@@ -1,8 +1,10 @@
 import torch
+import numpy as np
+from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
-import numpy as np
+
 
 # 自定义数据集类
 class TrajectoryDataset(Dataset):
@@ -13,15 +15,16 @@ class TrajectoryDataset(Dataset):
         """
         # 加载数据
         data = np.load(npz_file)
-        self.drone_positions = torch.tensor(data['drone_positions'], dtype=torch.float32)
-        self.target_positions = torch.tensor(data['target_positions'], dtype=torch.float32)
-        self.future_trajectories = torch.tensor(data['future_trajectories'], dtype=torch.float32)
+        self.drone_positions = torch.tensor(data['array_drone_pos'], dtype=torch.float32)
+        self.target_positions = torch.tensor(data['array_target_pos'], dtype=torch.float32)
+        self.future_trajectories = torch.tensor(data['array_future_traj'], dtype=torch.float32)
 
     def __len__(self):
         return len(self.drone_positions)
 
     def __getitem__(self, idx):
         return self.drone_positions[idx], self.target_positions[idx], self.future_trajectories[idx]
+
 
 # 定义神经网络模型
 class TrajectoryPredictor(nn.Module):
@@ -40,27 +43,34 @@ class TrajectoryPredictor(nn.Module):
         x = self.output(x)
         return x
 
-# 数据文件路径
-npz_file = 'path_to_your_dataset.npz'  # 替换为你的数据文件路径
 
-# 创建数据集和数据加载器
-dataset = TrajectoryDataset(npz_file)
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+def main():
+    # 创建数据集和数据加载器
+    print("Loading dataset...")
+    npz_file = './data/data_processed_0_1/data_processed_20250424_110042.npz'  # 数据文件路径
+    dataset = TrajectoryDataset(npz_file)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-# 初始化模型、损失函数和优化器
-model = TrajectoryPredictor()
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    # 初始化模型、损失函数和优化器
+    print("Initialing model...")
+    model = TrajectoryPredictor()
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-# 训练模型
-num_epochs = 10
-for epoch in range(num_epochs):
-    running_loss = 0.0
-    for drone_pos, target_pos, future_traj in dataloader:
-        optimizer.zero_grad()
-        outputs = model(drone_pos, target_pos)
-        loss = criterion(outputs, future_traj)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-    print(f'Epoch {epoch + 1}, Loss: {running_loss / len(dataloader)}')
+    # 训练模型
+    print("Training...")
+    num_epochs = 10
+    for epoch in tqdm(range(num_epochs)):
+        running_loss = 0.0
+        for drone_pos, target_pos, future_traj in tqdm(dataloader):
+            optimizer.zero_grad()
+            outputs = model(drone_pos, target_pos)
+            loss = criterion(outputs, future_traj)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        print(f'Epoch {epoch + 1}, Loss: {running_loss / len(dataloader)}')
+
+
+if __name__ == "__main__":
+    main()
