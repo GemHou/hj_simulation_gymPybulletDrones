@@ -134,105 +134,106 @@ def calc_pid_control(obs_ma, small_target_pos, vel_x_last, vel_y_last):
     return action_ma, vel_x_last, vel_y_last, drone_pos
 
 
-def main():
+def initialize_environment():
     print("Load env...")
-    env = HjAviary(gui=RENDER)  # , ctrl_freq=10, pyb_freq=100
-
+    env = HjAviary(gui=RENDER)
     print("Load a-star...")
     dilated_occ_file_path = "./data/dilated_occ_index.npy"
     dilated_occ_index = np.load(dilated_occ_file_path)
+    return env, dilated_occ_index
 
-    print("Looping...")
+
+def reset_environment(env):
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    print(current_time, "reset...")
+    save_flag = False
+    obs_ma, info = env.reset(percent=1)
+    list_drone_pos = []
+    list_target_pos = []
+    drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
+    vel_x_last = vel_x
+    vel_y_last = vel_y
+    target_pos = [env.target_x, env.target_y, env.target_z]
+    list_drone_pos.append(drone_pos)
+    list_target_pos.append(target_pos)
+    return obs_ma, save_flag, list_drone_pos, list_target_pos, drone_pos, vel_x_last, vel_y_last, target_pos
+
+
+def perform_path_search(dilated_occ_index, drone_pos, target_pos):
+    path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
+    if search_time > 0.5:
+        print("search_time > 0.5")
+        return None
+    if path_points_pos is None:
+        print("start end point problem")
+        return None
+    visualize_path(path_points_pos)
+    if len(path_points_pos) < 4:
+        print("len(path_points_pos) < 4")
+        return None
+    small_target_pos = path_points_pos[3]
+    vis_point(small_target_pos, color=[0, 1, 1, 0.5])
+    return path_points_pos, small_target_pos
+
+
+def control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos):
+    ep_len = 0
+    save_flag = False
     while True:
-        current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-        print(current_time, "reset...")
-
-        save_flag = False
-
-        obs_ma, info = env.reset(percent=1)
-
-        list_drone_pos = []
-        list_target_pos = []
-
-        drone_pos, vel_z, vel_x, vel_y, ang_x, ang_my = analyze_obs(obs_ma)
-        vel_x_last = vel_x
-        vel_y_last = vel_y
+        ep_len += 1
         target_pos = [env.target_x, env.target_y, env.target_z]
-
-        list_drone_pos.append(drone_pos)
-        list_target_pos.append(target_pos)
-
         path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
         if search_time > 0.5:
             print("search_time > 0.5")
-            continue
-
+            break
         if path_points_pos is None:
-            print("start end point problem")
-            pass
-        else:
-            visualize_path(path_points_pos)  # 调用可视化函数
+            print("path_points_pos is None")
+            break
+        if len(path_points_pos) < 4:
+            if ep_len > 30 * 5:
+                save_flag = True
+            print("len(path_points_pos) < 4")
+            break
+        small_target_pos = path_points_pos[3]
+        action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
+                                                                        vel_y_last)
+        target_pos = [env.target_x, env.target_y, env.target_z]
+        list_drone_pos.append(drone_pos)
+        list_target_pos.append(target_pos)
+        next_obs_ma, reward, done, truncated, info = env.step(action_ma)
+        obs_ma = next_obs_ma
+        if RENDER:
+            env.render()
+            time.sleep(1 / 30)
+        if done:
+            print("done")
+            break
+    return save_flag, list_drone_pos, list_target_pos
 
-            if len(path_points_pos) < 4:
-                print("len(path_points_pos) < 4")
-                continue
-            small_target_pos = path_points_pos[3]
 
-            vis_point(small_target_pos, color=[0, 1, 1, 0.5])
+def save_data(save_flag, list_drone_pos, list_target_pos):
+    if save_flag:
+        drone_pos_array = np.array(list_drone_pos)
+        target_pos_array = np.array(list_target_pos)
+        current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_name = f'./data/data_raw_0_2/data_raw_{current_time}.npz'
+        np.savez(file_name, drone_pos_array=drone_pos_array, target_pos_array=target_pos_array)
+        print("Data_raw saved as numpy array.")
 
-            ep_len = 0
 
-            while True:
-                ep_len += 1
-                target_pos = [env.target_x, env.target_y, env.target_z]
-                path_points_pos, search_time = search_a_star_pos(dilated_occ_index, drone_pos, target_pos)
-                if search_time > 0.5:
-                    print("search_time > 0.5")
-                    break
-
-                if path_points_pos is None:
-                    print("path_points_pos is None")
-                    break
-
-                if len(path_points_pos) < 4:
-                    if ep_len > 30 * 5:
-                        save_flag = True
-                    print("len(path_points_pos) < 4")
-                    break
-
-                small_target_pos = path_points_pos[3]
-
-                # print("small_target_pos: ", small_target_pos)
-
-                action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
-                                                                                vel_y_last)
-                target_pos = [env.target_x, env.target_y, env.target_z]
-
-                list_drone_pos.append(drone_pos)
-                list_target_pos.append(target_pos)
-
-                next_obs_ma, reward, done, truncated, info = env.step(
-                    action_ma)  # obs [1, 72] 12 + ACTION_BUFFER_SIZE * 4 = 72
-
-                # SAVE next_obs_ma data
-
-                obs_ma = next_obs_ma
-
-                if RENDER:
-                    env.render()
-                    time.sleep(1 / 30)  # * 10
-
-                if done:
-                    print("done")
-                    break
-        if save_flag:
-            drone_pos_array = np.array(list_drone_pos)
-            target_pos_array = np.array(list_target_pos)
-            current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-            file_name = f'./data/data_raw_0_2/data_raw_{current_time}.npz'
-            np.savez(file_name, drone_pos_array=drone_pos_array, target_pos_array=target_pos_array)
-            print("Data_raw saved as numpy array.")
-
+def main():
+    env, dilated_occ_index = initialize_environment()
+    print("Looping...")
+    while True:
+        obs_ma, save_flag, list_drone_pos, list_target_pos, drone_pos, vel_x_last, vel_y_last, target_pos = reset_environment(
+            env)
+        path_result = perform_path_search(dilated_occ_index, drone_pos, target_pos)
+        if path_result is None:
+            continue
+        path_points_pos, small_target_pos = path_result
+        save_flag, list_drone_pos, list_target_pos = control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
+                                                                  vel_y_last, list_drone_pos, list_target_pos)
+        save_data(save_flag, list_drone_pos, list_target_pos)
     print("Finished...")
     time.sleep(666)
 
