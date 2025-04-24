@@ -6,6 +6,7 @@ import torch.optim as optim
 from datetime import datetime
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter  # 导入 TensorBoard 的 SummaryWriter
+import open3d as o3d  # 导入 Open3D
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -133,6 +134,23 @@ def main():
                 distances = torch.norm(outputs - future_traj, dim=2)
                 ade = torch.mean(distances)
                 val_running_ade += ade.item()
+
+                # 可视化预测轨迹和真实轨迹
+                for i in range(len(outputs)):
+                    predicted_traj = outputs[i].cpu().numpy()
+                    true_traj = future_traj[i].cpu().numpy()
+
+                    # 创建 Open3D 点云对象
+                    pcd_predicted = o3d.geometry.PointCloud()
+                    pcd_predicted.points = o3d.utility.Vector3dVector(predicted_traj)
+                    pcd_predicted.paint_uniform_color([1, 0, 0])  # 红色表示预测轨迹
+
+                    pcd_true = o3d.geometry.PointCloud()
+                    pcd_true.points = o3d.utility.Vector3dVector(true_traj)
+                    pcd_true.paint_uniform_color([0, 1, 0])  # 绿色表示真实轨迹
+
+                    # 可视化
+                    o3d.visualization.draw_geometries([pcd_predicted, pcd_true])
 
         # 每个 epoch 记录平均验证损失到 TensorBoard
         val_avg_loss = val_running_loss / len(val_dataloader)
