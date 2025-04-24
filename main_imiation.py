@@ -50,14 +50,20 @@ class TrajectoryPredictor(nn.Module):
 
 
 def main():
-    # 创建数据集和数据加载器
-    print("Loading dataset...")
-    npz_file = './data/data_processed_0_1/data_processed_20250424_110042.npz'  # 数据文件路径
-    dataset = TrajectoryDataset(npz_file)
-    dataloader = DataLoader(dataset, batch_size=32*32, shuffle=True)
+    # 创建训练集和数据加载器
+    print("Loading training dataset...")
+    train_npz_file = './data/data_processed_0_1/train_data_processed_20250424_160608.npz'  # 训练数据文件路径
+    train_dataset = TrajectoryDataset(train_npz_file)
+    train_dataloader = DataLoader(train_dataset, batch_size=32*32, shuffle=True)
+
+    # 创建验证集和数据加载器
+    print("Loading validation dataset...")
+    val_npz_file = './data/data_processed_0_1/val_data_processed_20250424_160608.npz'  # 验证数据文件路径
+    val_dataset = TrajectoryDataset(val_npz_file)
+    val_dataloader = DataLoader(val_dataset, batch_size=32*32, shuffle=False)
 
     # 初始化模型、损失函数和优化器
-    print("Initialing model...")
+    print("Initializing model...")
     model = TrajectoryPredictor().to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -73,7 +79,8 @@ def main():
     for epoch in range(num_epochs):
         running_loss = 0.0
         batch_idx = 0
-        for drone_pos, target_pos, future_traj in tqdm(dataloader):
+        model.train()  # 设置模型为训练模式
+        for drone_pos, target_pos, future_traj in tqdm(train_dataloader):
             batch_idx += 1
             drone_pos = drone_pos.to(device)
             target_pos = target_pos.to(device)
@@ -87,13 +94,32 @@ def main():
             running_loss += loss.item()
 
             # 每个批次记录损失到 TensorBoard
-            writer.add_scalar('Training Loss per Batch', loss.item(), epoch * len(dataloader) + batch_idx)
+            writer.add_scalar('Training Loss per Batch', loss.item(), epoch * len(train_dataloader) + batch_idx)
 
-        # 每个 epoch 记录平均损失到 TensorBoard
-        avg_loss = running_loss / len(dataloader)
-        writer.add_scalar('Training Loss per Epoch', avg_loss, epoch)
+        # 每个 epoch 记录平均训练损失到 TensorBoard
+        train_avg_loss = running_loss / len(train_dataloader)
+        writer.add_scalar('Training Loss per Epoch', train_avg_loss, epoch)
 
-        print(f'Epoch {epoch + 1}, Loss: {avg_loss}')
+        print(f'Epoch {epoch + 1}, Training Loss: {train_avg_loss}')
+
+        # 验证模型
+        model.eval()  # 设置模型为评估模式
+        val_running_loss = 0.0
+        with torch.no_grad():
+            for drone_pos, target_pos, future_traj in tqdm(val_dataloader):
+                drone_pos = drone_pos.to(device)
+                target_pos = target_pos.to(device)
+                future_traj = future_traj.to(device)
+
+                outputs = model(drone_pos, target_pos)
+                loss = criterion(outputs, future_traj)
+                val_running_loss += loss.item()
+
+        # 每个 epoch 记录平均验证损失到 TensorBoard
+        val_avg_loss = val_running_loss / len(val_dataloader)
+        writer.add_scalar('Validation Loss per Epoch', val_avg_loss, epoch)
+
+        print(f'Epoch {epoch + 1}, Validation Loss: {val_avg_loss}')
 
     # 关闭 TensorBoard 的 SummaryWriter
     writer.close()
