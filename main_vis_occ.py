@@ -62,7 +62,9 @@ def main():
     line_sets = []
     base_colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]]  # 预定义颜色
 
-    for i, (drone_traj, target_traj) in tqdm(enumerate(zip(drone_trajs, target_trajs))):
+    for i in tqdm(range(len(drone_trajs))):
+        drone_traj = drone_trajs[i]
+        target_traj = target_trajs[i]
         base_color = base_colors[i % len(base_colors)]
 
         # 创建无人机轨迹线

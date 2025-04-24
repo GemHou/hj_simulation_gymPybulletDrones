@@ -53,7 +53,7 @@ def visualize_outputs(outputs):
 
 def main():
     env, dilated_occ_index = initialize_environment()
-    model_path = './data/models/model_epoch_1.pth'  # 替换为实际的模型文件路径
+    model_path = './data/models/model_epoch_2.pth'  # 替换为实际的模型文件路径
     model = load_model(model_path)
     print("Looping...")
     while True:
