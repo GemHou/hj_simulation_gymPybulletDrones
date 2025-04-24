@@ -13,6 +13,7 @@ from utils_model import TrajectoryPredictor
 # 检查是否有可用的 GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device: ", device)
+VIS_COUNT = 5
 
 
 def main():
@@ -102,7 +103,7 @@ def main():
 
                 # 可视化预测轨迹和真实轨迹
                 for i in range(len(outputs)):
-                    if vis_count >= 10:
+                    if vis_count >= VIS_COUNT:
                         break
                     predicted_traj = outputs[i].cpu().numpy()
                     true_traj = future_traj[i].cpu().numpy()
@@ -120,11 +121,9 @@ def main():
                     combined_pcd = pcd_predicted + pcd_true
 
                     # 保存为 PLY 文件，文件名标注训练回合数
-                    o3d.io.write_point_cloud(f'epoch_{epoch}_combined_{vis_count}.ply', combined_pcd)
+                    o3d.io.write_point_cloud(f'./data/train_vis/epoch_{epoch}_combined_{vis_count}.ply', combined_pcd)
 
                     vis_count += 1
-                if vis_count >= 10:
-                    break
 
         # 每个 epoch 记录平均验证损失到 TensorBoard
         val_avg_loss = val_running_loss / len(val_dataloader)
