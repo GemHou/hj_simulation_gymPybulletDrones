@@ -7,6 +7,10 @@ from datetime import datetime
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter  # 导入 TensorBoard 的 SummaryWriter
 
+# 检查是否有可用的 GPU
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("device: ", device)
+
 # 自定义数据集类
 class TrajectoryDataset(Dataset):
     def __init__(self, npz_file):
@@ -50,17 +54,18 @@ def main():
     print("Loading dataset...")
     npz_file = './data/data_processed_0_1/data_processed_20250424_110042.npz'  # 数据文件路径
     dataset = TrajectoryDataset(npz_file)
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32*32, shuffle=True)
 
     # 初始化模型、损失函数和优化器
     print("Initialing model...")
-    model = TrajectoryPredictor()
+    model = TrajectoryPredictor().to(device)
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 初始化 TensorBoard 的 SummaryWriter
     current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-    writer = SummaryWriter(log_dir=('./runs/trajectory_experiment'+current_time))  # 指定日志保存路径 tensorboard --logdir=./runs
+    writer = SummaryWriter(
+        log_dir=('./runs/trajectory_experiment' + current_time))  # 指定日志保存路径 tensorboard --logdir=./runs
 
     # 训练模型
     print("Training...")
@@ -70,6 +75,10 @@ def main():
         batch_idx = 0
         for drone_pos, target_pos, future_traj in tqdm(dataloader):
             batch_idx += 1
+            drone_pos = drone_pos.to(device)
+            target_pos = target_pos.to(device)
+            future_traj = future_traj.to(device)
+
             optimizer.zero_grad()
             outputs = model(drone_pos, target_pos)
             loss = criterion(outputs, future_traj)
