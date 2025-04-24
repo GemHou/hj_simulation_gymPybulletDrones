@@ -113,7 +113,7 @@ def save_data(save_flag, list_drone_pos, list_target_pos):
         drone_pos_array = np.array(list_drone_pos)
         target_pos_array = np.array(list_target_pos)
         current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-        file_name = f'./data/data_raw_0_2/data_raw_{current_time}.npz'
+        file_name = f'./data/data_raw_0_3/data_raw_{current_time}.npz'
         np.savez(file_name, drone_pos_array=drone_pos_array, target_pos_array=target_pos_array)
         print("Data_raw saved as numpy array.")
 

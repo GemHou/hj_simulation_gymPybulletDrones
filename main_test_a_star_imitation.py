@@ -7,7 +7,7 @@ from main_test_a_star import initialize_environment, perform_path_search, reset_
 from utils_model import TrajectoryPredictor
 
 RENDER_OPEN3D = False
-RENDER_PYBULLET = True
+RENDER_PYBULLET = False
 DEVICE = torch.device("cpu")
 print("DEVICE: ", DEVICE)
 CONTROL_MODE = "nn"  # astar nn
@@ -22,19 +22,19 @@ def load_model(model_path):
     return model
 
 
-def visualize_outputs(outputs, pcd_occ, drone_pos):
-    """使用 Open3D 可视化 outputs"""
-    print("Visualizing outputs...")
-    # 假设 outputs 是一个形状为 (batch_size, seq_len, 3) 的张量，表示轨迹点的 (x, y, z) 坐标
-    outputs = outputs.detach().cpu().numpy()  # 转换为 NumPy 数组
-    if len(outputs.shape) == 3:
-        outputs = outputs.squeeze(0)  # 去掉 batch 维度
+def visualize_outputs(outputs_rela, pcd_occ, drone_pos):
+    """使用 Open3D 可视化 outputs_rela"""
+    print("Visualizing outputs_rela...")
+    # 假设 outputs_rela 是一个形状为 (batch_size, seq_len, 3) 的张量，表示轨迹点的 (x, y, z) 坐标
+    outputs_rela = outputs_rela.detach().cpu().numpy()  # 转换为 NumPy 数组
+    if len(outputs_rela.shape) == 3:
+        outputs_rela = outputs_rela.squeeze(0)  # 去掉 batch 维度
 
-    outputs = outputs + drone_pos
+    outputs_abs = outputs_rela + drone_pos
 
     # 创建点云
     pcd_traj = o3d.geometry.PointCloud()
-    pcd_traj.points = o3d.utility.Vector3dVector(outputs)
+    pcd_traj.points = o3d.utility.Vector3dVector(outputs_abs)
 
     # 创建可视化窗口
     vis = o3d.visualization.Visualizer()
@@ -76,7 +76,7 @@ def create_point_cloud(points):
 
 
 def control_loop_nn(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y_last, list_drone_pos, list_target_pos,
-                 render_pybullet):
+                 render_pybullet, model):
     ep_len = 0
     save_flag = False
     while True:
@@ -94,7 +94,21 @@ def control_loop_nn(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last, vel_y
                 save_flag = True
             print("len(path_points_pos) < 4")
             break
-        small_target_pos = path_points_pos[3]
+        if CONTROL_MODE == "astar":
+            small_target_pos = path_points_pos[3]
+        elif CONTROL_MODE == "nn":
+            tensor_drone_pos = torch.tensor([drone_pos], dtype=torch.float32)
+            tensor_target_pos = torch.tensor([target_pos], dtype=torch.float32)
+            outputs_rela = model(tensor_drone_pos, tensor_target_pos)
+            outputs_rela = outputs_rela.detach().cpu().numpy()  # 转换为 NumPy 数组
+            if len(outputs_rela.shape) == 3:
+                outputs_rela = outputs_rela.squeeze(0)  # 去掉 batch 维度
+            outputs_abs = outputs_rela + drone_pos
+            small_target_pos_astar = path_points_pos[3]
+            small_target_pos_nn = outputs_abs[-1]
+            small_target_pos = small_target_pos_nn
+        else:
+            raise
         action_ma, vel_x_last, vel_y_last, drone_pos = calc_pid_control(obs_ma, small_target_pos, vel_x_last,
                                                                         vel_y_last)
         target_pos = [env.target_x, env.target_y, env.target_z]
@@ -126,12 +140,12 @@ def main():
             continue
         tensor_drone_pos = torch.tensor([drone_pos], dtype=torch.float32)
         tensor_target_pos = torch.tensor([target_pos], dtype=torch.float32)
-        outputs = model(tensor_drone_pos, tensor_target_pos)
+        outputs_rela = model(tensor_drone_pos, tensor_target_pos)
         if RENDER_OPEN3D:
-            visualize_outputs(outputs, pcd_occ, drone_pos)  # 调用可视化函数
+            visualize_outputs(outputs_rela, pcd_occ, drone_pos)  # 调用可视化函数
         save_flag, list_drone_pos, list_target_pos = control_loop_nn(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
                                                                   vel_y_last, list_drone_pos, list_target_pos,
-                                                                  RENDER_PYBULLET)
+                                                                  RENDER_PYBULLET, model)
         save_data(save_flag, list_drone_pos, list_target_pos)
     print("Finished...")
     time.sleep(666)
