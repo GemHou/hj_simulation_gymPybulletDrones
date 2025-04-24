@@ -20,7 +20,7 @@ def load_model(model_path):
     return model
 
 
-def visualize_outputs(outputs):
+def visualize_outputs(outputs, pcd_occ, drone_pos):
     """使用 Open3D 可视化 outputs"""
     print("Visualizing outputs...")
     # 假设 outputs 是一个形状为 (batch_size, seq_len, 3) 的张量，表示轨迹点的 (x, y, z) 坐标
@@ -28,9 +28,11 @@ def visualize_outputs(outputs):
     if len(outputs.shape) == 3:
         outputs = outputs.squeeze(0)  # 去掉 batch 维度
 
+    outputs = outputs + drone_pos
+
     # 创建点云
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(outputs)
+    pcd_traj = o3d.geometry.PointCloud()
+    pcd_traj.points = o3d.utility.Vector3dVector(outputs)
 
     # 创建可视化窗口
     vis = o3d.visualization.Visualizer()
@@ -44,7 +46,8 @@ def visualize_outputs(outputs):
     # )
 
     # 添加点云到窗口
-    vis.add_geometry(pcd)
+    vis.add_geometry(pcd_traj)
+    vis.add_geometry(pcd_occ)
 
     # 设置视图参数（可选）
     ctr = vis.get_view_control()
@@ -71,9 +74,9 @@ def transfer_points(dilated_occ_index):
 
 
 def create_point_cloud(points):
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points)
-    return pcd
+    pcd_occ = o3d.geometry.PointCloud()
+    pcd_occ.points = o3d.utility.Vector3dVector(points)
+    return pcd_occ
 
 
 def main():
@@ -82,7 +85,7 @@ def main():
     model = load_model(model_path)
     if RENDER:
         points = transfer_points(dilated_occ_index)
-        pcd = create_point_cloud(points)
+        pcd_occ = create_point_cloud(points)
     print("Looping...")
     while True:
         obs_ma, save_flag, list_drone_pos, list_target_pos, drone_pos, vel_x_last, vel_y_last, target_pos = reset_environment(
@@ -94,7 +97,7 @@ def main():
         tensor_target_pos = torch.tensor([target_pos], dtype=torch.float32)
         outputs = model(tensor_drone_pos, tensor_target_pos)
         if RENDER:
-            visualize_outputs(outputs)  # 调用可视化函数
+            visualize_outputs(outputs, pcd_occ, drone_pos)  # 调用可视化函数
         save_flag, list_drone_pos, list_target_pos = control_loop(env, obs_ma, dilated_occ_index, drone_pos, vel_x_last,
                                                                   vel_y_last, list_drone_pos, list_target_pos)
         save_data(save_flag, list_drone_pos, list_target_pos)
