@@ -17,6 +17,9 @@ def search_a_star_pos(dilated_occ_index, drone_pos, target_pos):
     target_index[0] = np.clip(target_index[0], 0, 128 * 4 - 1)
     target_index[1] = np.clip(target_index[1], 0, 128 * 4 - 1)
     target_index[2] = np.clip(target_index[2], 0, 128 - 1)
+    start_index[0] = np.clip(start_index[0], 0, 128 * 4 - 1)
+    start_index[1] = np.clip(start_index[1], 0, 128 * 4 - 1)
+    start_index[2] = np.clip(start_index[2], 0, 128 - 1)
     start_time = time.time()
     path_index = a_star_3d(tuple(start_index), tuple(target_index), dilated_occ_index)
     if path_index is not None:
